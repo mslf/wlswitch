@@ -1,18 +1,19 @@
 # depslib dependency file v1.0
-1455786408 source:/home/mslf/programs/git/wlswitch/src/main.cpp
+1455811269 source:/home/mslf/programs/git/wlswitch/src/main.cpp
 	<iostream>
 	<cstdlib>
 	<string>
-	"../include/wlswitch.h"
+	"wlswitch.h"
 
-1455787850 /home/mslf/programs/git/wlswitch/include/wlswitch.h
+1455812817 /home/mslf/programs/git/wlswitch/include/wlswitch.h
 	<string>
 
-1455576003 source:/home/mslf/programs/git/wlswitch/src/wlswitch.cpp
-	"../include/wlswitch.h"
+1455812387 source:/home/mslf/programs/git/wlswitch/src/wlswitch.cpp
+	"wlswitch.h"
 	<cstdlib>
-	<time.h>
+	<ctime>
 	<iostream>
 	<fstream>
 	<string>
+	<unistd.h>
 
