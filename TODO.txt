@@ -1,0 +1,3 @@
++default config
++Images computing (avg, invert etc)
++Configs changing
