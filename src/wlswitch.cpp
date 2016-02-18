@@ -28,6 +28,7 @@ using namespace std;
 
 Wlswitch::Wlswitch(string path, string newDelay)
 {
+    homePath = (string)getenv("HOME");
     currentDir = path;
     delay = newDelay;
     loadConfig();
@@ -45,7 +46,7 @@ void Wlswitch::loadConfig()
     int k = 0;
 
     configLoaded = 0;
-    string configPath = ((string)getenv("HOME") + "/.config/wlswitch/wlswitch.conf");
+    string configPath = (homePath + "/.config/wlswitch/wlswitch.conf");
 
     fin.open(configPath.c_str());
     if (!fin.is_open())
@@ -70,8 +71,8 @@ void Wlswitch::loadConfig()
 void Wlswitch::switchWallpaper()
 {
     string s;
-    string countFile = (currentDir + "wallpapersCount.txt");
-    string listFile = (currentDir + "wallpapersList.txt");
+    string countFile = (homePath + "/.config/wlswitch/wallpapersCount");
+    string listFile = (homePath + "/.config/wlswitch/wallpapersList");
     string fileName;///Result wallpaper name
 
     int count = 0;
@@ -79,36 +80,36 @@ void Wlswitch::switchWallpaper()
     /*
 
         In current directory we get the list of images (jpg, png, etc) and puts it to
-        wallpapersList.txt (which in current directory).
-        After that we count them and puts count to the wallpapersCount.txt.
-        Next stage is a randoming number between 1 and count, reading N lines from wallpapersList.txt (N = count).
+        wallpapersList (which in .config/wlswitch/ directory).
+        After that we count them and puts count to the wallpapersCount.
+        Next stage is a randoming number between 1 and count, reading N lines from wallpapersList (N = count).
         fileName will have path of the picture to switching.
 
     */
     srand (time (NULL));
 
-    s = "find " + currentDir + " -type f > " + currentDir + "wallpapersList.txt";
+    s = "find " + currentDir + " -type f > " + homePath + "/.config/wlswitch/wallpapersList";
     system(s.c_str());
 
-    s = "grep jpg " + currentDir + "wallpapersList.txt > " + currentDir + "wl_jpg.txt";///Jpg pictures
+    s = "grep jpg " + homePath + "/.config/wlswitch/wallpapersList > " + homePath + "/.config/wlswitch/wl_jpg";///Jpg pictures
     system(s.c_str());
 
-    s = "grep png " + currentDir + "wallpapersList.txt > " + currentDir + "wl_png.txt";///Png pictures
+    s = "grep png " + homePath + "/.config/wlswitch/wallpapersList > " + homePath + "/.config/wlswitch/wl_png";///Png pictures
     system(s.c_str());
 
-    s = "rm " + currentDir + "wallpapersList.txt";
+    /*s = "rm " + homePath + "/.config/wlswitch/wallpapersList";
+    system(s.c_str());*/
+
+    s = "cat " + homePath + "/.config/wlswitch/wl_jpg " + homePath + "/.config/wlswitch/wl_png > " + homePath + "/.config/wlswitch/wallpapersList";
     system(s.c_str());
 
-    s = "cat " + currentDir + "wl_jpg.txt " + currentDir + "wl_png.txt > " + currentDir + "wallpapersList.txt";
+    s = "rm " + homePath + "/.config/wlswitch/wl_jpg";
     system(s.c_str());
 
-    s = "rm " + currentDir + "wl_jpg.txt";
+    s = "rm " + homePath + "/.config/wlswitch/wl_png";
     system(s.c_str());
 
-    s = "rm " + currentDir + "wl_png.txt";
-    system(s.c_str());
-
-    s = "cat " + currentDir + "wallpapersList.txt | wc -l > " + currentDir + "wallpapersCount.txt";
+    s = "cat " + homePath + "/.config/wlswitch/wallpapersList | wc -l > " + homePath + "/.config/wlswitch/wallpapersCount";
     system(s.c_str());
 
 
@@ -131,6 +132,8 @@ void Wlswitch::switchWallpaper()
 
     fin.close();
 
+    currentWallpaper = fileName;
+
     s = switcherProgram + " " + switcherArguments + " " + fileName;
     system(s.c_str());
 
@@ -146,7 +149,7 @@ void Wlswitch::parseConfig(string* words)
 {
 
 
-    i f(words[2] == ";") {
+    if(words[2] == ";") {
         ///Path setting
         if (words[0] == "path") {
             ///Simple path validating. Path should begin and ends with "/" symbol.
@@ -173,6 +176,13 @@ void Wlswitch::parseConfig(string* words)
             }
 
         else
+            ///Current depend config path setting
+
+            if (words[0] == "dependConfig") {
+                currentDependConfig = words[1];
+            }
+
+        else
 
             if (words[1] == "avg") {
 
@@ -186,4 +196,37 @@ unsigned int Wlswitch::waitDelay()
     return sleep (stoi (delay));
 }
 
-void Wlswitch::replaceMarker(string oldMarker, string newMarker) {} ///TODO
+void Wlswitch::replaceMarker(string oldMarker, string newMarker)
+{
+    /*
+        Needs to open currentDependConfig and search #WLSWITCH_AUTO (then the next line with "#" is a markers configurer)
+        for e.g. conky's config
+
+            #////////////////////////
+            double_buffer yes
+            TEXT
+            #WLSWITCH_AUTO
+            #color_1 color_2 color_3
+            CPU0: ${color 2E2E2E}${cpu cpu0} CPU1: ${color 2A2A2A}${cpu cpu1} CPU3: ${color 1E2E3E}${cpu cpu3}
+            #////////////////////////
+
+            Then:
+                the ${color 2E2E2E} will be replaced with color_1 marker (for e.g. avg)
+                the ${color 2A2A2A} will be replaced with color_2 marker (for e.g. avg_w)
+                the ${color 1E2E3E} will be replaced with color_3 marker (for e.g. avg_b)
+        TODO!
+
+    */
+}
+void Wlswitch::getMean()
+{
+    /*
+        Needs to calculate some characteristics of the wallpaper picture for e.g. average color (avg)
+
+    string s;
+
+    s = "identify -verbose " + currentWallpaper + " | grep mean: > ~/.config/wlswitch/meanColors";
+
+
+    */
+}

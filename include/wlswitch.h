@@ -24,11 +24,18 @@ using namespace std;
 class Wlswitch
 {
 private:
+    string homePath;
+
     string currentDir;
     string switcherProgram;
     string switcherArguments;
     string delay;
     string avgMarker;
+    string currentWallpaper;
+
+    string meanRColor, meanGColor, meanBColor, meanWColor;
+
+    string currentDependConfig;
 
     bool configLoaded;
 
@@ -36,6 +43,7 @@ private:
     void loadConfig();
     void parseConfig(string* words);
     void replaceMarker(string oldMarker, string newMarker);
+    void getMean();
 
 public:
 
