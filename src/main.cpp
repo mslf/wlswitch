@@ -26,10 +26,10 @@ int main()
 {
     Wlswitch wl;
 
-    while(1) {
+    while (1) {
 
         wl.switchWallpaper();
-        if(wl.waitDelay())
+        if (wl.waitDelay())
             return 0;
     }
 

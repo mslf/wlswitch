@@ -22,6 +22,7 @@
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
+			<Add directory="include" />
 		</Compiler>
 		<Unit filename="include/wlswitch.h" />
 		<Unit filename="src/main.cpp" />

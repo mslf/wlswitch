@@ -31,7 +31,7 @@ Wlswitch::Wlswitch(string path, string newDelay)
     currentDir = path;
     delay = newDelay;
     loadConfig();
-    if(!configLoaded)
+    if (!configLoaded)
         cerr << "Error while config loading! Put the config file  to the ~/.config/wlswitch/wlswitch.conf!\n";
 
 }
@@ -48,16 +48,16 @@ void Wlswitch::loadConfig()
     string configPath = ((string)getenv("HOME") + "/.config/wlswitch/wlswitch.conf");
 
     fin.open(configPath.c_str());
-    if(!fin.is_open())
+    if (!fin.is_open())
         return;
     configLoaded = 1;
 
-    while(!fin.eof()) {
+    while (!fin.eof()) {
 
         fin >> word[k];
         k++;
         ///Every three word puts to parser.
-        if(3 == k) {
+        if (3 == k) {
 
             k = 0;
             parseConfig(word);
@@ -113,7 +113,7 @@ void Wlswitch::switchWallpaper()
 
 
     fin.open(countFile.c_str());
-    if(!fin.is_open())
+    if (!fin.is_open())
         return;
     fin >> count;
 
@@ -121,12 +121,12 @@ void Wlswitch::switchWallpaper()
 
 
     fin.open(listFile.c_str());
-    if(!fin.is_open())
+    if (!fin.is_open())
         return;
 
     count = rand() % count + 1;
 
-    for(int i = 0; i < count; i++)
+    for (int i = 0; i < count; i++)
         fin >> fileName;
 
     fin.close();
@@ -146,21 +146,21 @@ void Wlswitch::parseConfig(string* words)
 {
 
 
-    if(words[2] == ";") {
+    i f(words[2] == ";") {
         ///Path setting
-        if(words[0] == "path") {
+        if (words[0] == "path") {
             ///Simple path validating. Path should begin and ends with "/" symbol.
-            if(words[1].at(0) == words[1].at(words[1].length() - 1) && words[1][0] == '/')
+            if (words[1].at(0) == words[1].at(words[1].length() - 1) && words[1][0] == '/')
                 currentDir = words[1];
         }
         else
             ///Wallpaper switcher program setting
-            if(words[0] == "switcher") {
+            if (words[0] == "switcher") {
                 switcherProgram = words[1];
             }
         else
             ///Delay setting
-            if(words[0] == "delay") {
+            if (words[0] == "delay") {
 
                 delay = words[1];
             }
@@ -168,13 +168,13 @@ void Wlswitch::parseConfig(string* words)
         else
             ///Switcher program argument setting
             //if(words[0].find("key", 0) != string::npos){
-            if(words[0] == "argument") {
+            if (words[0] == "argument") {
                 switcherArguments += words[1] + " ";
             }
 
         else
 
-            if(words[1] == "avg") {
+            if (words[1] == "avg") {
 
                 replaceMarker(words[0], avgMarker);
             }
@@ -183,7 +183,6 @@ void Wlswitch::parseConfig(string* words)
 
 unsigned int Wlswitch::waitDelay()
 {
-
     return sleep (stoi (delay));
 }
 
