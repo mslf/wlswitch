@@ -7,6 +7,7 @@ using namespace std;
 int main()
 {
     Wlswitch wl;
+
     while(1){
 
         wl.switchWallpaper();

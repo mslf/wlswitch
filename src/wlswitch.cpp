@@ -7,11 +7,14 @@
 
 using namespace std;
 
-Wlswitch::Wlswitch(string path, int newDelay)
+Wlswitch::Wlswitch(string path, string newDelay)
 {
     currentDir = path;
     delay = newDelay;
     loadConfig();
+    if(!configLoaded)
+        cerr << "Error while config loading! Put the config file  to the ~/.config/wlswitch/wlswitch.conf!\n";
+
 }
 
 Wlswitch::~Wlswitch(){}
@@ -23,7 +26,7 @@ void Wlswitch::loadConfig()
     int k = 0;
 
     configLoaded = 0;
-    string configPath = (currentDir + (string)"wlswitch.conf");
+    string configPath = ((string)getenv("HOME") + "/.config/wlswitch/wlswitch.conf");
 
     fin.open(configPath.c_str(), ios_base::in);
     if(!fin.is_open())

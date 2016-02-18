@@ -22,7 +22,7 @@ private:
 public:
 
 
-    Wlswitch(string path = "/home/mslf/Pictures/", int newDelay = 10);
+    Wlswitch(string path = "~/Pictures/", string newDelay = "180");
     ~Wlswitch();
 
     void switchWallpaper();
