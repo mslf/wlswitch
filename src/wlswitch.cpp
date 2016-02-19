@@ -23,6 +23,7 @@
 #include <fstream>
 #include <string>
 #include <unistd.h>
+#include <dirent.h>
 
 using namespace std;
 
@@ -70,74 +71,66 @@ void Wlswitch::loadConfig()
 
 void Wlswitch::switchWallpaper()
 {
-    string s;
-    string countFile = (homePath + "/.config/wlswitch/wallpapersCount");
-    string listFile = (homePath + "/.config/wlswitch/wallpapersList");
-    string fileName;///Result wallpaper name
+    string namesList;
+    string resultFilename;
 
     int count = 0;
-    ifstream fin;
+    int currentPosition = 0;
+    int currentN = 0;
+
+
+    struct dirent *dentry;
+    DIR *d = NULL;
+    string tempFilename;
+
     /*
 
-        In current directory we get the list of images (jpg, png, etc) and puts it to
-        wallpapersList (which in .config/wlswitch/ directory).
-        After that we count them and puts count to the wallpapersCount.
-        Next stage is a randoming number between 1 and count, reading N lines from wallpapersList (N = count).
+        In current directory we get the list of images (jpg, png) and puts it to
+        namesList string and count them. Each filename in new line.
+        Next stage is randoming number between 1 and count, reading N - 1 lines from namesList
+         (N = count, which is contain random number in that time).
+
         fileName will have path of the picture to switching.
+        After that we substring the wanted filename from namesList and switch current wallpaper to that.
 
     */
+
+    if ((d = opendir(currentDir.c_str())) != NULL){
+
+        while ((dentry = readdir(d)) != NULL){
+
+            tempFilename = (string)dentry->d_name;
+            if (tempFilename.find(".jpg", 0) != string::npos || tempFilename.find(".png", 0) != string::npos){
+
+                namesList += tempFilename + "\n";
+                count++;
+            }
+        }
+    } else
+        cerr << "Error while wallpaper directory opening! Correct this path in config file!\nWrong path: " + currentDir + "\n";
+
+
     srand (time (NULL));
-
-    s = "find " + currentDir + " -type f > " + homePath + "/.config/wlswitch/wallpapersList";
-    system(s.c_str());
-
-    s = "grep jpg " + homePath + "/.config/wlswitch/wallpapersList > " + homePath + "/.config/wlswitch/wl_jpg";///Jpg pictures
-    system(s.c_str());
-
-    s = "grep png " + homePath + "/.config/wlswitch/wallpapersList > " + homePath + "/.config/wlswitch/wl_png";///Png pictures
-    system(s.c_str());
-
-    /*s = "rm " + homePath + "/.config/wlswitch/wallpapersList";
-    system(s.c_str());*/
-
-    s = "cat " + homePath + "/.config/wlswitch/wl_jpg " + homePath + "/.config/wlswitch/wl_png > " + homePath + "/.config/wlswitch/wallpapersList";
-    system(s.c_str());
-
-    s = "rm " + homePath + "/.config/wlswitch/wl_jpg";
-    system(s.c_str());
-
-    s = "rm " + homePath + "/.config/wlswitch/wl_png";
-    system(s.c_str());
-
-    s = "cat " + homePath + "/.config/wlswitch/wallpapersList | wc -l > " + homePath + "/.config/wlswitch/wallpapersCount";
-    system(s.c_str());
-
-
-    fin.open(countFile.c_str());
-    if (!fin.is_open())
-        return;
-    fin >> count;
-
-    fin.close();
-
-
-    fin.open(listFile.c_str());
-    if (!fin.is_open())
-        return;
-
     count = rand() % count + 1;
 
-    for (int i = 0; i < count; i++)
-        fin >> fileName;
+    while (currentN != count - 1){
 
-    fin.close();
+        if (namesList.find("\n", currentPosition) != string::npos){
 
-    currentWallpaper = fileName;
+            currentPosition = namesList.find("\n", currentPosition);
+            currentN++;
+        }
+    }
 
-    s = switcherProgram + " " + switcherArguments + " " + fileName;
+    if (count != 1)
+        resultFilename = namesList.substr(currentPosition + 1, namesList.find("\n", currentPosition + 1) - currentPosition - 1);
+    else
+        resultFilename = namesList.substr(0, namesList.find("\n", 0));
+
+    currentWallpaper = currentDir + resultFilename;
+
+    string s = switcherProgram + " " + switcherArguments + " " + currentWallpaper;
     system(s.c_str());
-
-
 }
 
 void Wlswitch::updateDependConfigs()
