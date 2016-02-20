@@ -1,4 +1,0 @@
-+Images computing (avg, invert etc) (not SHIT-CODE)
-+Depend configs changing
-	- space triming
-	- multi-colored strings
