@@ -28,7 +28,9 @@ int main()
 
     while (1) {
 
+
         wl.switchWallpaper();
+        wl.updateDependConfigs();
         if (wl.waitDelay())
             return 0;
     }
