@@ -1,4 +1,6 @@
 +Images computing (avg, invert etc) (not SHIT-CODE)
+	- imagemagick libaries
 +Depend configs changing
 	- space triming
 	- multi-colored strings
++Programs runs in updateScrips closes with the main program <-- fix it

@@ -60,7 +60,7 @@ void Wlswitch::loadConfig()
 
         fin >> word[k];
         k++;
-        ///Every three word puts to parser.
+        //Every three word puts to parser.
         if (3 == k) {
 
             k = 0;
@@ -81,13 +81,11 @@ void Wlswitch::switchWallpaper()
     int currentPosition = 0;
     int currentN = 0;
 
-
     struct dirent *dentry;
     DIR *d = NULL;
     string tempFilename;
 
     /*
-
         In current directory we get the list of images (jpg, png) and puts it to
         namesList string and count them. Each filename in new line.
         Next stage is randoming number between 1 and count, reading N - 1 lines from namesList
@@ -95,7 +93,6 @@ void Wlswitch::switchWallpaper()
 
         fileName will have path of the picture to switching.
         After that we substring the wanted filename from namesList and switch current wallpaper to that.
-
     */
 
     if ((d = opendir(currentDir.c_str())) != NULL){
@@ -111,10 +108,7 @@ void Wlswitch::switchWallpaper()
         }
     } else
         cerr << "Error while wallpaper directory opening! Correct this path in config file!\nWrong path: " + currentDir + "\n";
-
-
     srand (time (NULL));
-
     int randNum = rand() % count + 1;
     while (currentN != randNum - 1){
 
@@ -131,13 +125,10 @@ void Wlswitch::switchWallpaper()
         resultFilename = namesList.substr(0, namesList.find("\n", 0));
 
     currentWallpaper = currentDir + resultFilename;
+    string temp = switcherProgram + " " + switcherArguments + " " + currentWallpaper;
+    system(temp.c_str());
 
-    string s = switcherProgram + " " + switcherArguments + " " + currentWallpaper;
-
-    system(s.c_str());
-
-
-    ///Computing wallpaper's characteristics.
+    //Computing wallpaper's characteristics.
     getMean();
 
     free(d);
@@ -147,6 +138,11 @@ void Wlswitch::switchWallpaper()
 void Wlswitch::updateDependConfigs()
 {
     loadConfig();
+    if (shellProgram != "" && updateScript != ""){
+
+        string temp = shellProgram + " " + updateScript + " &";
+        system(temp.c_str());
+    }
 }
 
 void Wlswitch::parseConfig(string* words)
@@ -154,41 +150,55 @@ void Wlswitch::parseConfig(string* words)
 
 
     if(words[2] == ";") {
-        ///Path setting
+        //Path setting
         if (words[0] == "path") {
-            ///Simple path validating. Path should begin and ends with "/" symbol.
+            //Simple path validating. Path should begin and ends with "/" symbol.
             if (words[1].at(0) == words[1].at(words[1].length() - 1) && words[1][0] == '/')
                 currentDir = words[1];
         }
         else
-            ///Wallpaper switcher program setting
+            //Wallpaper switcher program setting
             if (words[0] == "switcher") {
+
                 switcherProgram = words[1];
             }
         else
-            ///Delay setting
+            //Delay setting
             if (words[0] == "delay") {
 
                 delay = words[1];
             }
 
         else
-            ///Switcher program argument setting
-            //if(words[0].find("key", 0) != string::npos){
+            //Switcher program argument setting
             if (words[0] == "argument") {
+
                 switcherArguments += words[1] + " ";
             }
 
         else
-            ///Current depend config path setting
+            //Update script path
+            if (words[0] == "updateScript") {
 
-            if (words[0] == "dependConfig") {
-                currentDependConfig = words[1];
-
+                updateScript = words[1];
             }
 
         else
+            //Shell program
+            if (words[0] == "shellProgram") {
 
+                shellProgram = words[1];
+            }
+
+        else
+            //Current depend config path setting
+            if (words[0] == "dependConfig") {
+
+                currentDependConfig = words[1];
+            }
+
+        else
+            //Average color of the wallpaper marker
             if (words[1] == "avg") {
 
                 replaceMarker(words[0], avgMarker);
@@ -207,7 +217,9 @@ void Wlswitch::replaceMarker(string oldMarker, string newMarker)
     string maskConfigString = "###<MASK_CONFIG_LINE> " + oldMarker + " ";
     string errorMessage = "Error while depend config opening! Correct the depend config path in ~/.config/wlswitch/wlswitch.conf!\n";
 
-    char temp_strLine[1000];///Yes,in  lines bigger than 1000 chars only 1000 will be processed.
+    char temp_strLine[1000];
+    //Yes,in  lines bigger than 1000 chars only 1000 will be processed.
+
     string strLine;
     string fileContain;
     string oldMask;
@@ -215,7 +227,6 @@ void Wlswitch::replaceMarker(string oldMarker, string newMarker)
 
     bool inAutoBlock = false;
     bool maskConfigured = false;
-
 
     fio.open(currentDependConfig, ios_base::in);
     if (!fio.is_open())
@@ -228,75 +239,60 @@ void Wlswitch::replaceMarker(string oldMarker, string newMarker)
 
         if (strLine.find("###<WLSWITCH_AUTO>", 0) != string::npos)
             inAutoBlock = true;
-
         if (strLine.find("###</WLSWITCH_AUTO>", 0) != string::npos)
             inAutoBlock = false;
-
         if (strLine.find(maskConfigString, 0) != string::npos && inAutoBlock){
 
             int position = strLine.find(maskConfigString, 0);
 
             position = strLine.find("#", position + maskConfigString.length());
             oldMask = strLine.substr(position + 1, strLine.find("#", position + 1) - position - 1);
-
             position = strLine.find("#", strLine.find("#", position + 1) + 1);
             newMask = strLine.substr(position + 1, strLine.find("#", position + 1) - position - 1);
-
             if (newMask.find("%", 0) == string::npos)
                 cerr << "Warning! New mask has no % symbol. Is this error?\nLine: " + strLine + "\n";
             else
                 newMask.replace(newMask.find("%", 0), 1, newMarker);
 
             maskConfigured = true;
-
         }
 
         if (strLine.find("###<AUTO_CONFIG_LINE_ONES> " + oldMarker, 0) != string::npos && inAutoBlock && maskConfigured){
 
             regex pattern (oldMask, regex::ECMAScript);
-            smatch m;///For matching result
-
+            smatch m;
+            //For matching result
             fileContain += strLine + "\n";
-
-            ///Next line after ###<AUTO_CONFIG_LINE_ONES> will be modified
+            //Next line after ###<AUTO_CONFIG_LINE_ONES> will be modified
             fio.getline(temp_strLine, 1000);
             strLine = (string)temp_strLine;
 
             if (newMarker != ""){
 
-                ///Replacing all pattern sequences to oldMarker
+                //Replacing all pattern sequences to oldMarker
                 while (regex_search(strLine, m, pattern)){
 
                     strLine.replace(m.position(), m.str().length(), oldMarker);
-
                 }
-
-                ///Replacing all oldMarker sequences to newMarker
+                //Replacing all oldMarker sequences to newMarker
                 while (strLine.find(oldMarker, 0) != string::npos){
 
                     strLine.replace(strLine.find(oldMarker, 0), oldMarker.length(), newMask);
                 }
             }
-
-
         }
-
         fileContain += strLine + "\n";
-
     }
 
     fio.close();
-
-    ///Saving to file
+    //Saving to file
     fio.open(currentDependConfig, ios_base::out);
     if (!fio.is_open())
         cerr << errorMessage;
-
     fio.seekp(0, ios_base::beg);
     fileContain.erase(fileContain.length() - 1, 1);///Deleting \n symbol.
     fio << fileContain;
     fio.close();
-
     /*
         Needs to open currentDependConfig and search ###<WLSWITCH_AUTO>
         for e.g. conky's config
@@ -325,18 +321,15 @@ void Wlswitch::replaceMarker(string oldMarker, string newMarker)
                 the ${color 2A2A2A} will be replaced with color_2 marker (for e.g. avg_w)
                 the ${color 1E2E3E} will be replaced with color_3 marker (for e.g. avg_b)
         TODO!
-
     */
-
 }
+
 void Wlswitch::getMean()
 {
     /*
         Needs to calculate some characteristics of the wallpaper picture for e.g. average color (avg)
-
-
         SHIT-CODE HERE IN
-
+        TODO with imagemagick libaries!
     */
 
     string s;
@@ -386,6 +379,18 @@ void Wlswitch::getMean()
     fio >> meanGColor;
     fio >> meanBColor;
     fio >> meanWColor;
+    if (meanRColor.length() == 1)
+        meanRColor = "0" + meanRColor;
+
+    if (meanGColor.length() == 1)
+        meanGColor = "0" + meanGColor;
+
+    if (meanBColor.length() == 1)
+        meanBColor = "0" + meanBColor;
+
+    if (meanWColor.length() == 1)
+        meanWColor = "0" + meanWColor;
+
 
     fio.close();
 

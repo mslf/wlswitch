@@ -25,20 +25,18 @@ class Wlswitch
 {
 private:
     string homePath;
-
     string currentDir;
     string switcherProgram;
     string switcherArguments;
     string delay;
     string avgMarker;
     string currentWallpaper;
-
+    string updateScript;
+    string shellProgram;
+    //Script runs after depend configs updating
     string meanRColor, meanGColor, meanBColor, meanWColor;
-
     string currentDependConfig;
-
     bool configLoaded;
-
 
     void loadConfig();
     void parseConfig(string* words);
@@ -46,16 +44,11 @@ private:
     void getMean();
 
 public:
-
-
     Wlswitch(string path = "~/Pictures/", string newDelay = "180");
     ~Wlswitch();
 
     void switchWallpaper();
     void updateDependConfigs();
     unsigned int waitDelay();
-
 };
-
-
 #endif // WLSWITCH_H_INCLUDED
