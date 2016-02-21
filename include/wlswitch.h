@@ -30,11 +30,13 @@ private:
     string switcherArguments;
     string delay;
     string avgMarker;
+    string avgInvertMarker;
     string currentWallpaper;
     string updateScript;
     string shellProgram;
     //Script runs after depend configs updating
     string meanRColor, meanGColor, meanBColor, meanWColor;
+    string meanRColorInvert, meanGColorInvert, meanBColorInvert, meanWColorInvert;
     string currentDependConfig;
     bool configLoaded;
 

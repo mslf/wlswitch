@@ -203,6 +203,13 @@ void Wlswitch::parseConfig(string* words)
 
                 replaceMarker(words[0], avgMarker);
             }
+
+        else
+            //Average color of the wallpaper marker
+            if (words[1] == "avgInvert") {
+
+                replaceMarker(words[0], avgInvertMarker);
+            }
     }
 }
 
@@ -346,7 +353,7 @@ void Wlswitch::getMean()
         cerr << "Error while opening meanColors file! Check the ImageMagick installation.\n";
         return;
     }
-    int r, g, b, w;
+    unsigned int r, g, b, w;
 
     fio >> s >> r >> s >> s;
     fio >> s >> g >> s >> s;
@@ -361,10 +368,16 @@ void Wlswitch::getMean()
         cerr << "Error while opening meanColors file! Check the ImageMagick installation.\n";
         return;
     }
+
     fio << hex << r << "\n";
     fio << hex << g << "\n";
     fio << hex << b << "\n";
     fio << hex << w << "\n";
+    fio << hex << (0xFF - r) << "\n";
+    fio << hex << (0xFF - g) << "\n";
+    fio << hex << (0xFF - b) << "\n";
+    fio << hex << (0xFF - w) << "\n";
+
     fio.close();
 
     fio.open(homePath + "/.config/wlswitch/meanColors", ios_base::in);
@@ -379,6 +392,11 @@ void Wlswitch::getMean()
     fio >> meanGColor;
     fio >> meanBColor;
     fio >> meanWColor;
+
+    fio >> meanRColorInvert;
+    fio >> meanGColorInvert;
+    fio >> meanBColorInvert;
+    fio >> meanWColorInvert;
     if (meanRColor.length() == 1)
         meanRColor = "0" + meanRColor;
 
@@ -391,8 +409,21 @@ void Wlswitch::getMean()
     if (meanWColor.length() == 1)
         meanWColor = "0" + meanWColor;
 
+    if (meanRColorInvert.length() == 1)
+        meanRColorInvert = "0" + meanRColorInvert;
+
+    if (meanGColorInvert.length() == 1)
+        meanGColorInvert = "0" + meanGColorInvert;
+
+    if (meanBColorInvert.length() == 1)
+        meanBColorInvert = "0" + meanBColorInvert;
+
+    if (meanWColorInvert.length() == 1)
+        meanWColorInvert = "0" + meanWColorInvert;
+
 
     fio.close();
 
     avgMarker = "#" + meanRColor + meanGColor + meanBColor;
+    avgInvertMarker = "#" + meanRColorInvert + meanGColorInvert + meanBColorInvert;
 }
