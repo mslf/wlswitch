@@ -20,13 +20,16 @@
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
+#include <sstream>
+#include <iomanip>
 #include <fstream>
 #include <string>
 #include <unistd.h>
 #include <dirent.h>
 #include <regex>
-
+#include <Magick++.h>
 using namespace std;
+using namespace Magick;
 
 Wlswitch::Wlswitch(string path, string newDelay)
 {
@@ -140,7 +143,7 @@ void Wlswitch::updateDependConfigs()
     loadConfig();
     if (shellProgram != "" && updateScript != ""){
 
-        string temp = shellProgram + " " + updateScript + " &";
+        string temp = shellProgram + " " + updateScript;
         system(temp.c_str());
     }
 }
@@ -334,96 +337,43 @@ void Wlswitch::replaceMarker(string oldMarker, string newMarker)
 void Wlswitch::getMean()
 {
     /*
-        Needs to calculate some characteristics of the wallpaper picture for e.g. average color (avg)
-        SHIT-CODE HERE IN
-        TODO with imagemagick libaries!
+        Calculating some characteristics of the wallpaper picture for e.g. average color (avg) e.t.c
     */
 
-    string s;
+    stringstream convertStream;
 
-    s = "identify -verbose " + currentWallpaper + " | grep mean: > ~/.config/wlswitch/meanColors";
-    system(s.c_str());
-
-    fstream fio;
-    homePath = (string)getenv("HOME");
-
-    fio.open(homePath + "/.config/wlswitch/meanColors", ios_base::in);
-    if (!fio.is_open()){
-
-        cerr << "Error while opening meanColors file! Check the ImageMagick installation.\n";
-        return;
+    Image wallpaperImage;
+    Image::ImageStatistics* wallpaperImageStats = new Image::ImageStatistics;
+    try
+    {
+        wallpaperImage.read(currentWallpaper);
     }
-    unsigned int r, g, b, w;
-
-    fio >> s >> r >> s >> s;
-    fio >> s >> g >> s >> s;
-    fio >> s >> b >> s >> s;
-    fio >> s >> w >> s >> s;
-
-    fio.close();
-
-    fio.open(homePath + "/.config/wlswitch/meanColors", ios_base::out);
-    if (!fio.is_open()){
-
-        cerr << "Error while opening meanColors file! Check the ImageMagick installation.\n";
-        return;
+    catch(Exception &error_ )
+    {
+        cout << "Error while opening wallpaper file! Please check your config file!\n";
     }
 
-    fio << hex << r << "\n";
-    fio << hex << g << "\n";
-    fio << hex << b << "\n";
-    fio << hex << w << "\n";
-    fio << hex << (0xFF - r) << "\n";
-    fio << hex << (0xFF - g) << "\n";
-    fio << hex << (0xFF - b) << "\n";
-    fio << hex << (0xFF - w) << "\n";
-
-    fio.close();
-
-    fio.open(homePath + "/.config/wlswitch/meanColors", ios_base::in);
-    if (!fio.is_open()){
-
-        cerr << "Error while opening meanColors file! Check the ImageMagick installation.\n";
-        return;
+    try
+    {
+        wallpaperImage.statistics(wallpaperImageStats);
+    }
+    catch(Exception &error_ )
+    {
+        cout << "Error while getting wallpaper statistics! Please check your config file!\n";
     }
 
+    unsigned int r, g, b;
+    r = (unsigned int)(wallpaperImageStats->red.mean / 65535 * 255);
+    g = (unsigned int)(wallpaperImageStats->green.mean / 65535 * 255);
+    b = (unsigned int)(wallpaperImageStats->blue.mean / 65535 * 255);
 
-    fio >> meanRColor;
-    fio >> meanGColor;
-    fio >> meanBColor;
-    fio >> meanWColor;
+    convertStream << setw(2) << setfill('0') << hex << r << setw(2) << setfill('0') << hex << g << setw(2) << setfill('0') << hex << b;
+    avgMarker = "#" + convertStream.str();
+    convertStream.str("0");
 
-    fio >> meanRColorInvert;
-    fio >> meanGColorInvert;
-    fio >> meanBColorInvert;
-    fio >> meanWColorInvert;
-    if (meanRColor.length() == 1)
-        meanRColor = "0" + meanRColor;
+    convertStream << setw(2) << setfill('0') << hex << (255 - r) << setw(2) << setfill('0') << hex << (255 - g) << setw(2) << setfill('0') << hex << (255 - b);
+    avgInvertMarker = "#" + convertStream.str();
+    convertStream.str("0");
 
-    if (meanGColor.length() == 1)
-        meanGColor = "0" + meanGColor;
-
-    if (meanBColor.length() == 1)
-        meanBColor = "0" + meanBColor;
-
-    if (meanWColor.length() == 1)
-        meanWColor = "0" + meanWColor;
-
-    if (meanRColorInvert.length() == 1)
-        meanRColorInvert = "0" + meanRColorInvert;
-
-    if (meanGColorInvert.length() == 1)
-        meanGColorInvert = "0" + meanGColorInvert;
-
-    if (meanBColorInvert.length() == 1)
-        meanBColorInvert = "0" + meanBColorInvert;
-
-    if (meanWColorInvert.length() == 1)
-        meanWColorInvert = "0" + meanWColorInvert;
-
-
-    fio.close();
-
-    avgMarker = "#" + meanRColor + meanGColor + meanBColor;
-    avgInvertMarker = "#" + meanRColorInvert + meanGColorInvert + meanBColorInvert;
+    delete wallpaperImageStats;
 }

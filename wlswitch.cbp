@@ -14,9 +14,12 @@
 				<Compiler>
 					<Add option="-O2" />
 					<Add option="-std=c++11" />
+					<Add directory="/usr/include/ImageMagick-6" />
+					<Add directory="/usr/include/i386-linux-gnu/ImageMagick-6" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
+					<Add library="libMagick++-6.Q16" />
 				</Linker>
 			</Target>
 		</Build>
