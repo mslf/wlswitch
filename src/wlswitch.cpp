@@ -28,6 +28,8 @@
 #include <dirent.h>
 #include <regex>
 #include <Magick++.h>
+#include <vector>
+
 using namespace std;
 using namespace Magick;
 
@@ -77,7 +79,7 @@ void Wlswitch::loadConfig()
 
 void Wlswitch::switchWallpaper()
 {
-    string namesList;
+    vector<string> namesList;
     string resultFilename;
 
     int count = 0;
@@ -105,39 +107,16 @@ void Wlswitch::switchWallpaper()
             tempFilename = (string)dentry->d_name;
             if (tempFilename.find(".jpg", 0) != string::npos || tempFilename.find(".png", 0) != string::npos){
 
-                namesList += tempFilename + "\n";
-                count++;
+                namesList.insert(namesList.end(), tempFilename);
             }
         }
         //TODO reading list files from the dir
         srand (time (NULL));
-        seekdir(d, 0);
-        int randNum = rand() % count + 1;
-
-        for (int i = 0; i < randNum; i++){
-            dentry = readdir(d);
-            resultFilename = (string)dentry->d_name;
-        }
+        int randNum = rand() % namesList.size();
+        resultFilename = namesList[randNum];
 
     } else
         cerr << "Error while wallpaper directory opening! Correct this path in config file!\nWrong path: " + currentDir + "\n";
-
-
-/*
-    while (currentN != randNum - 1){
-
-        if (namesList.find("\n", currentPosition + 1) != string::npos){
-
-            currentPosition = namesList.find("\n", currentPosition + 1);
-            currentN++;
-        }
-    }
-
-    if (count != 1 && randNum != count)
-        resultFilename = namesList.substr(currentPosition + 1, namesList.find("\n", currentPosition + 1) - currentPosition - 1);
-    else
-        resultFilename = namesList.substr(0, namesList.find("\n", 0));
-*/
 
     currentWallpaper = currentDir + resultFilename;
     string temp = switcherProgram + " " + switcherArguments + " " + currentWallpaper;
