@@ -60,7 +60,6 @@ void Wlswitch::loadConfig()
     if (!fin.is_open())
         return;
 
-
     while (!fin.eof()) {
 
         fin >> word[k];
@@ -74,65 +73,57 @@ void Wlswitch::loadConfig()
     }
 
     configLoaded = true;
-
 }
 
 void Wlswitch::switchWallpaper()
 {
-    vector<string> namesList;
-    string resultFilename;
+    if (configLoaded){
 
-    int count = 0;
-    int currentPosition = 0;
-    int currentN = 0;
+        vector<string> namesList;
+        string resultFilename;
+        struct dirent *dentry;
+        DIR *d = NULL;
+        string tempFilename;
+        /*
+            In current directory we get the list of images (jpg, png) and puts it to
+            namesList string and count them.
+            Then we random number between 0 and count of files and set the resultFilename to namesList[randNum].
+        */
+        if ((d = opendir(currentDir.c_str())) != NULL){
 
-    struct dirent *dentry;
-    DIR *d = NULL;
-    string tempFilename;
+            while ((dentry = readdir(d)) != NULL){
 
-    /*
-        In current directory we get the list of images (jpg, png) and puts it to
-        namesList string and count them. Each filename in new line.
-        Next stage is randoming number between 1 and count, reading N - 1 lines from namesList
-         (N = count, which is contain random number in that time).
+                tempFilename = (string)dentry->d_name;
+                if (tempFilename.find(".jpg", 0) != string::npos || tempFilename.find(".png", 0) != string::npos){
 
-        fileName will have path of the picture to switching.
-        After that we substring the wanted filename from namesList and switch current wallpaper to that.
-    */
-
-    if ((d = opendir(currentDir.c_str())) != NULL){
-
-        while ((dentry = readdir(d)) != NULL){
-
-            tempFilename = (string)dentry->d_name;
-            if (tempFilename.find(".jpg", 0) != string::npos || tempFilename.find(".png", 0) != string::npos){
-
-                namesList.insert(namesList.end(), tempFilename);
+                    namesList.insert(namesList.end(), tempFilename);
+                }
             }
-        }
-        //TODO reading list files from the dir
-        srand (time (NULL));
-        int randNum = rand() % namesList.size();
-        resultFilename = namesList[randNum];
+            srand (time (NULL));
+            int randNum = rand() % namesList.size();
+            resultFilename = namesList[randNum];
 
-    } else
-        cerr << "Error while wallpaper directory opening! Correct this path in config file!\nWrong path: " + currentDir + "\n";
+        } else
+            cerr << "Error while wallpaper directory opening! Correct this path in config file!\nWrong path: " + currentDir << endl;
 
-    currentWallpaper = currentDir + resultFilename;
-    string temp = switcherProgram + " " + switcherArguments + " " + currentWallpaper;
-    system(temp.c_str());
+        currentWallpaper = currentDir + resultFilename;
+        string temp = switcherProgram + " " + switcherArguments + " " + currentWallpaper;
+        system(temp.c_str());
 
-    //Computing wallpaper's characteristics.
-    getMean();
+        //Computing wallpaper's characteristics.
+        getMean();
 
-    free(d);
-    free(dentry);
+        free(d);
+        free(dentry);
+    }
+    else
+        cerr << "Error while wallpaper switching! Config is not loaded!" << endl;
 }
 
 void Wlswitch::updateDependConfigs()
 {
     loadConfig();
-    if (shellProgram != "" && updateScript != ""){
+    if (shellProgram != "" && updateScript != "" && configLoaded){
 
         string temp = shellProgram + " " + updateScript;
         system(temp.c_str());
@@ -141,8 +132,6 @@ void Wlswitch::updateDependConfigs()
 
 void Wlswitch::parseConfig(string* words)
 {
-
-
     if(words[2] == ";") {
         //Path setting
         if (words[0] == "path") {
@@ -332,43 +321,46 @@ void Wlswitch::getMean()
     */
 
     //Using for converting int to hex string.
-    stringstream convertStream;
+    if (configLoaded){
 
-    Image wallpaperImage;
-    Image::ImageStatistics* wallpaperImageStats = new Image::ImageStatistics;
+        stringstream convertStream;
 
-    try
-    {
-        wallpaperImage.read(currentWallpaper);
+        Image wallpaperImage;
+        Image::ImageStatistics* wallpaperImageStats = new Image::ImageStatistics;
+
+        try
+        {
+            wallpaperImage.read(currentWallpaper);
+        }
+        catch(Exception &error_ )
+        {
+            cout << "Error while opening wallpaper file! Please check your config file!\n";
+        }
+
+        try
+        {
+            wallpaperImage.statistics(wallpaperImageStats);
+        }
+        catch(Exception &error_ )
+        {
+            cout << "Error while getting wallpaper statistics! Please check your config file!\n";
+        }
+
+        unsigned int r, g, b;
+        //Adduction the (0.0; 65535.0) numbers to (0; 255) format using magic number (65535).
+        //In specification sayed that it must match (0.0; 1.0) format, but on my machine is not so.
+        r = (unsigned int)(wallpaperImageStats->red.mean / 65535 * 255);
+        g = (unsigned int)(wallpaperImageStats->green.mean / 65535 * 255);
+        b = (unsigned int)(wallpaperImageStats->blue.mean / 65535 * 255);
+
+        convertStream << setw(2) << setfill('0') << hex << r << setw(2) << setfill('0') << hex << g << setw(2) << setfill('0') << hex << b;
+        avgMarker = "#" + convertStream.str();
+        convertStream.str("0");
+
+        convertStream << setw(2) << setfill('0') << hex << (255 - r) << setw(2) << setfill('0') << hex << (255 - g) << setw(2) << setfill('0') << hex << (255 - b);
+        avgInvertMarker = "#" + convertStream.str();
+        convertStream.str("0");
+
+        delete wallpaperImageStats;
     }
-    catch(Exception &error_ )
-    {
-        cout << "Error while opening wallpaper file! Please check your config file!\n";
-    }
-
-    try
-    {
-        wallpaperImage.statistics(wallpaperImageStats);
-    }
-    catch(Exception &error_ )
-    {
-        cout << "Error while getting wallpaper statistics! Please check your config file!\n";
-    }
-
-    unsigned int r, g, b;
-    //Adduction the (0.0; 65535.0) numbers to (0; 255) format using magic number (65535).
-    //In specification sayed that it must match (0.0; 1.0) format, but on my machine is not so.
-    r = (unsigned int)(wallpaperImageStats->red.mean / 65535 * 255);
-    g = (unsigned int)(wallpaperImageStats->green.mean / 65535 * 255);
-    b = (unsigned int)(wallpaperImageStats->blue.mean / 65535 * 255);
-
-    convertStream << setw(2) << setfill('0') << hex << r << setw(2) << setfill('0') << hex << g << setw(2) << setfill('0') << hex << b;
-    avgMarker = "#" + convertStream.str();
-    convertStream.str("0");
-
-    convertStream << setw(2) << setfill('0') << hex << (255 - r) << setw(2) << setfill('0') << hex << (255 - g) << setw(2) << setfill('0') << hex << (255 - b);
-    avgInvertMarker = "#" + convertStream.str();
-    convertStream.str("0");
-
-    delete wallpaperImageStats;
 }
