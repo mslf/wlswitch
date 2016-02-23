@@ -9,10 +9,10 @@ See the example config (wlswitch_sample.conf)
 Needs to install libmagick++ and libmagick++-dev packages.
 (
 For Debian:
-	$ sudo apt-get install libmagick++-6.q16-5v5 libgraphicsmagick++-q16-12 libmagick++-6.q16-dev 
+	$ sudo apt-get install libmagick++-6.q16-5v5 libgraphicsmagick++-q16-12 libmagick++-6.q16-dev libmagick++-dev
 )
 
-$ cmake CMakeLists.txt libmagick++-dev
+$ cmake CMakeLists.txt
 $ make
 ##install
 Use install.sh for creating wlswitch directory in your configs directory.
