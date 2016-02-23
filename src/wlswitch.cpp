@@ -109,10 +109,21 @@ void Wlswitch::switchWallpaper()
                 count++;
             }
         }
+        //TODO reading list files from the dir
+        srand (time (NULL));
+        seekdir(d, 0);
+        int randNum = rand() % count + 1;
+
+        for (int i = 0; i < randNum; i++){
+            dentry = readdir(d);
+            resultFilename = (string)dentry->d_name;
+        }
+
     } else
         cerr << "Error while wallpaper directory opening! Correct this path in config file!\nWrong path: " + currentDir + "\n";
-    srand (time (NULL));
-    int randNum = rand() % count + 1;
+
+
+/*
     while (currentN != randNum - 1){
 
         if (namesList.find("\n", currentPosition + 1) != string::npos){
@@ -126,6 +137,7 @@ void Wlswitch::switchWallpaper()
         resultFilename = namesList.substr(currentPosition + 1, namesList.find("\n", currentPosition + 1) - currentPosition - 1);
     else
         resultFilename = namesList.substr(0, namesList.find("\n", 0));
+*/
 
     currentWallpaper = currentDir + resultFilename;
     string temp = switcherProgram + " " + switcherArguments + " " + currentWallpaper;
@@ -340,10 +352,12 @@ void Wlswitch::getMean()
         Calculating some characteristics of the wallpaper picture for e.g. average color (avg) e.t.c
     */
 
+    //Using for converting int to hex string.
     stringstream convertStream;
 
     Image wallpaperImage;
     Image::ImageStatistics* wallpaperImageStats = new Image::ImageStatistics;
+
     try
     {
         wallpaperImage.read(currentWallpaper);
@@ -363,6 +377,8 @@ void Wlswitch::getMean()
     }
 
     unsigned int r, g, b;
+    //Adduction the (0.0; 65535.0) numbers to (0; 255) format using magic number (65535).
+    //In specification sayed that it must match (0.0; 1.0) format, but on my machine is not so.
     r = (unsigned int)(wallpaperImageStats->red.mean / 65535 * 255);
     g = (unsigned int)(wallpaperImageStats->green.mean / 65535 * 255);
     b = (unsigned int)(wallpaperImageStats->blue.mean / 65535 * 255);
