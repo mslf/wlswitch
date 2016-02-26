@@ -46,7 +46,7 @@ private:
     void getMean();
 
 public:
-    Wlswitch(string path = "~/Pictures/", string newDelay = "180");
+    Wlswitch(string path = "", string newDelay = "180");
     ~Wlswitch();
 
     void switchWallpaper();

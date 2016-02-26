@@ -77,7 +77,7 @@ void Wlswitch::loadConfig()
 
 void Wlswitch::switchWallpaper()
 {
-    if (configLoaded){
+    if (configLoaded && currentDir != ""){
 
         vector<string> namesList;
         string resultFilename;
@@ -100,11 +100,11 @@ void Wlswitch::switchWallpaper()
                 }
             }
             srand (time (NULL));
-            int randNum = rand() % namesList.size();
+            unsigned int randNum = rand() % namesList.size();
             resultFilename = namesList[randNum];
 
         } else
-            cerr << "Error while wallpaper directory opening! Correct this path in config file!\nWrong path: " + currentDir << endl;
+            cerr << "Error while wallpapers directory opening! Correct this path in config file!" << endl << "Wrong path: " + currentDir << endl;
 
         currentWallpaper = currentDir + resultFilename;
         string temp = switcherProgram + " " + switcherArguments + " " + currentWallpaper;
@@ -138,6 +138,8 @@ void Wlswitch::parseConfig(string* words)
             //Simple path validating. Path should begin and ends with "/" symbol.
             if (words[1].at(0) == words[1].at(words[1].length() - 1) && words[1][0] == '/')
                 currentDir = words[1];
+            else
+                cerr << "Error while wallpapers directory opening! Path should begin and ends with / symbol!" << endl;
         }
         else
             //Wallpaper switcher program setting
@@ -271,6 +273,32 @@ void Wlswitch::replaceMarker(string oldMarker, string newMarker)
                 }
             }
         }
+        /*
+        if (strLine.find("###<AUTO_CONFIG_LINE_ONE>", 0) != string::npos && inAutoBlock && maskConfigured){
+
+            regex pattern (oldMask, regex::ECMAScript);
+            smatch m;
+            //For matching result
+            strLine.t
+            fileContain += strLine + "\n";
+            //Next line after ###<AUTO_CONFIG_LINE_ONES> will be modified
+            fio.getline(temp_strLine, 1000);
+            strLine = (string)temp_strLine;
+
+            if (newMarker != ""){
+
+                //Replacing all pattern sequences to oldMarker
+                while (regex_search(strLine, m, pattern)){
+
+                    strLine.replace(m.position(), m.str().length(), oldMarker);
+                }
+                //Replacing all oldMarker sequences to newMarker
+                while (strLine.find(oldMarker, 0) != string::npos){
+
+                    strLine.replace(strLine.find(oldMarker, 0), oldMarker.length(), newMask);
+                }
+            }
+        }*///TODO
         fileContain += strLine + "\n";
     }
 
@@ -280,7 +308,7 @@ void Wlswitch::replaceMarker(string oldMarker, string newMarker)
     if (!fio.is_open())
         cerr << errorMessage;
     fio.seekp(0, ios_base::beg);
-    fileContain.erase(fileContain.length() - 1, 1);///Deleting \n symbol.
+    fileContain.erase(fileContain.length() - 1, 1);//Deleting \n symbol.
     fio << fileContain;
     fio.close();
     /*

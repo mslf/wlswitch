@@ -11,7 +11,7 @@ if(NOT ImageMagick_Magick++_FOUND)
 	message(SEND_ERROR "Failed to find Magick++")
 	return()
 else()
-	include_directories(${ImageMagick_Magick++_INCLUDE_DIRS})
+	include_directories(${ImageMagick_INCLUDE_DIRS})
 endif()
 # wlswitch needs Magick++ libs and includes
 
