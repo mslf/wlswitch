@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)	
+cmake_minimum_required(VERSION 3.3)	
 
 project(wlswitch)			
 # Project name
@@ -18,9 +18,9 @@ endif()
 include_directories(./include)
 #Adding include directories
 
-set(SOURCE_EXUTABLE src/main.cpp)		
+set(SOURCE_EXUTABLE ./src/main.cpp)		
 
-set(SOURCE_LIB src/wlswitch.cpp)			
+set(SOURCE_LIB ./src/wlswitch.cpp)			
 
 add_library(wlswitch_lib STATIC ${SOURCE_LIB})	
 

@@ -5,12 +5,12 @@ Also it is can change for e.g. conky configs at the markers for color changing.
 ## Config
 Loads the default config from `~/.config/wlswitch/wlswitch.conf`
 See the example config (`wlswitch_sample.conf`)
-##building
+## Building
 Needs to install `libmagick++` and `libmagick++-dev` packages.
 
 For Debian:
 ```
-$ sudo apt-get install libmagick++-6.q16-5v5 libgraphicsmagick++-q16-12 libmagick++-6.q16-dev libmagick++-dev
+$ apt-get install libmagick++-6.q16-5v5 libgraphicsmagick++-q16-12 libmagick++-6.q16-dev libmagick++-dev
 ```
 And make:
 ```

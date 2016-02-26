@@ -17,8 +17,6 @@
 	along with wlswitch. If not, see <http://www.gnu.org/licenses/>.
 */
 #include <iostream>
-#include <cstdlib>
-#include <string>
 #include "wlswitch.h"
 using namespace std;
 

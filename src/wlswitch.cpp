@@ -23,12 +23,14 @@
 #include <sstream>
 #include <iomanip>
 #include <fstream>
-#include <string>
 #include <unistd.h>
 #include <dirent.h>
 #include <regex>
 #include <Magick++.h>
 #include <vector>
+#include <sys/types.h>
+#include <sys/stat.h>
+
 
 using namespace std;
 using namespace Magick;
@@ -40,7 +42,7 @@ Wlswitch::Wlswitch(string path, string newDelay)
     delay = newDelay;
     loadConfig();
     if (!configLoaded)
-        cerr << "Error while config loading! Put the config file  to the ~/.config/wlswitch/wlswitch.conf!\n";
+        cerr << "Error while config loading! Put the config file  to the ~/.config/wlswitch/wlswitch.conf!" << endl;
 
 }
 
@@ -54,9 +56,27 @@ void Wlswitch::loadConfig()
 
     switcherArguments = "";
     configLoaded = false;
-    string configPath = (homePath + "/.config/wlswitch/wlswitch.conf");
+    string configPath = (homePath + (string)"/.config/wlswitch/wlswitch.conf");
 
     fin.open(configPath);
+    if (!fin.is_open()){
+
+        string tempConfigDirPath = homePath + (string)"/.config/wlswitch/";
+        if (mkdir(tempConfigDirPath.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == 0)
+            cerr << "Created config directory in " << homePath << "/.config/" << endl;
+        ofstream fout;
+        fout.open(configPath);
+       if (fout.is_open()){
+
+            cerr << "Created clean config " << homePath << "/.config/wlswitch" << endl;
+            fout.close();
+        }
+        else
+           cerr << "Error while creating clean config! " << homePath << "/.config/wlswitch" << endl;
+    }
+    fin.close();
+    fin.open(configPath);
+
     if (!fin.is_open())
         return;
 
@@ -77,7 +97,7 @@ void Wlswitch::loadConfig()
 
 void Wlswitch::switchWallpaper()
 {
-    if (configLoaded && currentDir != ""){
+    if (currentDir != ""){
 
         vector<string> namesList;
         string resultFilename;
@@ -96,18 +116,18 @@ void Wlswitch::switchWallpaper()
                 tempFilename = (string)dentry->d_name;
                 if (tempFilename.find(".jpg", 0) != string::npos || tempFilename.find(".png", 0) != string::npos){
 
-                    namesList.insert(namesList.end(), tempFilename);
+                    namesList.push_back(tempFilename);
                 }
             }
             srand (time (NULL));
-            unsigned int randNum = rand() % namesList.size();
+            unsigned long int randNum = rand() % namesList.size();
             resultFilename = namesList[randNum];
 
         } else
-            cerr << "Error while wallpapers directory opening! Correct this path in config file!" << endl << "Wrong path: " + currentDir << endl;
+            cerr << "Error while wallpapers directory opening! Correct this path in config file!" << endl << (string)"Wrong path: " + currentDir << endl;
 
         currentWallpaper = currentDir + resultFilename;
-        string temp = switcherProgram + " " + switcherArguments + " " + currentWallpaper;
+        string temp = switcherProgram + (string)" " + switcherArguments + (string)" " + currentWallpaper;
         system(temp.c_str());
 
         //Computing wallpaper's characteristics.
@@ -117,7 +137,7 @@ void Wlswitch::switchWallpaper()
         free(dentry);
     }
     else
-        cerr << "Error while wallpaper switching! Config is not loaded!" << endl;
+        cerr << "Error while wallpaper switching! Path is not set in the config file!" << endl;
 }
 
 void Wlswitch::updateDependConfigs()
@@ -125,7 +145,7 @@ void Wlswitch::updateDependConfigs()
     loadConfig();
     if (shellProgram != "" && updateScript != "" && configLoaded){
 
-        string temp = shellProgram + " " + updateScript;
+        string temp = shellProgram + (string)" " + updateScript;
         system(temp.c_str());
     }
 }
@@ -158,7 +178,7 @@ void Wlswitch::parseConfig(string* words)
             //Switcher program argument setting
             if (words[0] == "argument") {
 
-                switcherArguments += words[1] + " ";
+                switcherArguments += words[1] + (string)" ";
             }
 
         else
@@ -206,7 +226,7 @@ unsigned int Wlswitch::waitDelay()
 void Wlswitch::replaceMarker(string oldMarker, string newMarker)
 {
     fstream fio;
-    string maskConfigString = "###<MASK_CONFIG_LINE> " + oldMarker + " ";
+    string maskConfigString = (string)"###<MASK_CONFIG_LINE> " + oldMarker + (string)" ";
     string errorMessage = "Error while depend config opening! Correct the depend config path in ~/.config/wlswitch/wlswitch.conf!\n";
 
     char temp_strLine[1000];
@@ -242,19 +262,19 @@ void Wlswitch::replaceMarker(string oldMarker, string newMarker)
             position = strLine.find("#", strLine.find("#", position + 1) + 1);
             newMask = strLine.substr(position + 1, strLine.find("#", position + 1) - position - 1);
             if (newMask.find("%", 0) == string::npos)
-                cerr << "Warning! New mask has no % symbol. Is this error?\nLine: " + strLine + "\n";
+                cerr << "Warning! New mask has no % symbol. Is this error?\nLine: " << strLine << endl;
             else
                 newMask.replace(newMask.find("%", 0), 1, newMarker);
 
             maskConfigured = true;
         }
 
-        if (strLine.find("###<AUTO_CONFIG_LINE_ONES> " + oldMarker, 0) != string::npos && inAutoBlock && maskConfigured){
+        if (strLine.find((string)"###<AUTO_CONFIG_LINE_ONES> " + oldMarker, 0) != string::npos && inAutoBlock && maskConfigured){
 
             regex pattern (oldMask, regex::ECMAScript);
             smatch m;
             //For matching result
-            fileContain += strLine + "\n";
+            fileContain += strLine + (string)"\n";
             //Next line after ###<AUTO_CONFIG_LINE_ONES> will be modified
             fio.getline(temp_strLine, 1000);
             strLine = (string)temp_strLine;
@@ -299,7 +319,7 @@ void Wlswitch::replaceMarker(string oldMarker, string newMarker)
                 }
             }
         }*///TODO
-        fileContain += strLine + "\n";
+        fileContain += strLine + (string)"\n";
     }
 
     fio.close();
@@ -382,11 +402,11 @@ void Wlswitch::getMean()
         b = (unsigned int)(wallpaperImageStats->blue.mean / 65535 * 255);
 
         convertStream << setw(2) << setfill('0') << hex << r << setw(2) << setfill('0') << hex << g << setw(2) << setfill('0') << hex << b;
-        avgMarker = "#" + convertStream.str();
+        avgMarker = (string)"#" + convertStream.str();
         convertStream.str("0");
 
         convertStream << setw(2) << setfill('0') << hex << (255 - r) << setw(2) << setfill('0') << hex << (255 - g) << setw(2) << setfill('0') << hex << (255 - b);
-        avgInvertMarker = "#" + convertStream.str();
+        avgInvertMarker = (string)"#" + convertStream.str();
         convertStream.str("0");
 
         delete wallpaperImageStats;
