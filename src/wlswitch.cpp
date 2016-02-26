@@ -101,8 +101,8 @@ void Wlswitch::switchWallpaper()
 
         vector<string> namesList;
         string resultFilename;
-        struct dirent *dentry;
         DIR *d = NULL;
+        struct dirent *dentry = NULL;
         string tempFilename;
         /*
             In current directory we get the list of images (jpg, png) and puts it to
@@ -133,7 +133,7 @@ void Wlswitch::switchWallpaper()
         //Computing wallpaper's characteristics.
         getMean();
 
-        free(d);
+        closedir(d);
         free(dentry);
     }
     else
@@ -358,7 +358,6 @@ void Wlswitch::replaceMarker(string oldMarker, string newMarker)
                 the ${color 2E2E2E} will be replaced with color_1 marker (for e.g. avg)
                 the ${color 2A2A2A} will be replaced with color_2 marker (for e.g. avg_w)
                 the ${color 1E2E3E} will be replaced with color_3 marker (for e.g. avg_b)
-        TODO!
     */
 }
 
@@ -382,7 +381,7 @@ void Wlswitch::getMean()
         }
         catch(Exception &error_ )
         {
-            cout << "Error while opening wallpaper file! Please check your config file!\n";
+            cerr << "Error while opening wallpaper file! Please check your config file!" << endl;
         }
 
         try
@@ -391,7 +390,7 @@ void Wlswitch::getMean()
         }
         catch(Exception &error_ )
         {
-            cout << "Error while getting wallpaper statistics! Please check your config file!\n";
+            cerr << "Error while getting wallpaper statistics! Please check your config file!" << endl;
         }
 
         unsigned int r, g, b;

@@ -7,3 +7,5 @@
 	- caching image's statistic on program starting (all or not all) to file.
 	- multithreading?
 +New config format
++Fix memory leaks
++Add recursive directory reading

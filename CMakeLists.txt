@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.3)
 project(wlswitch)			
 # Project name
 
-add_definitions(-std=c++11)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wcpp")
 # For regex needs C++11
 
 find_package(ImageMagick COMPONENTS Magick++)
