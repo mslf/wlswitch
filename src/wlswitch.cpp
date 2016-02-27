@@ -366,15 +366,12 @@ void Wlswitch::getMean()
     /*
         Calculating some characteristics of the wallpaper picture for e.g. average color (avg) e.t.c
     */
-
-    //Using for converting int to hex string.
     if (configLoaded){
-
+        //Using for converting int to hex string.
         stringstream convertStream;
-
         Image wallpaperImage;
-        Image::ImageStatistics* wallpaperImageStats = new Image::ImageStatistics;
-
+        Image::ImageStatistics wallpaperImageStats;
+	
         try
         {
             wallpaperImage.read(currentWallpaper);
@@ -386,19 +383,18 @@ void Wlswitch::getMean()
 
         try
         {
-            wallpaperImage.statistics(wallpaperImageStats);
+            wallpaperImage.statistics(&wallpaperImageStats);
         }
         catch(Exception &error_ )
         {
             cerr << "Error while getting wallpaper statistics! Please check your config file!" << endl;
         }
-
         unsigned int r, g, b;
         //Adduction the (0.0; 65535.0) numbers to (0; 255) format using magic number (65535).
         //In specification sayed that it must match (0.0; 1.0) format, but on my machine is not so.
-        r = (unsigned int)(wallpaperImageStats->red.mean / 65535 * 255);
-        g = (unsigned int)(wallpaperImageStats->green.mean / 65535 * 255);
-        b = (unsigned int)(wallpaperImageStats->blue.mean / 65535 * 255);
+        r = (unsigned int)(wallpaperImageStats.red.mean / 65535 * 255);
+        g = (unsigned int)(wallpaperImageStats.green.mean / 65535 * 255);
+        b = (unsigned int)(wallpaperImageStats.blue.mean / 65535 * 255);
 
         convertStream << setw(2) << setfill('0') << hex << r << setw(2) << setfill('0') << hex << g << setw(2) << setfill('0') << hex << b;
         avgMarker = (string)"#" + convertStream.str();
@@ -407,7 +403,5 @@ void Wlswitch::getMean()
         convertStream << setw(2) << setfill('0') << hex << (255 - r) << setw(2) << setfill('0') << hex << (255 - g) << setw(2) << setfill('0') << hex << (255 - b);
         avgInvertMarker = (string)"#" + convertStream.str();
         convertStream.str("0");
-
-        delete wallpaperImageStats;
     }
 }
