@@ -43,7 +43,7 @@ private:
     void loadConfig();
     void parseConfig(string* words);
     void replaceMarker(string oldMarker, string newMarker);
-    void getMean();
+    void calculateMarkers();
 
 public:
     Wlswitch(string path = "", string newDelay = "180");

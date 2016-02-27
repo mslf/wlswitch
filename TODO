@@ -1,11 +1,11 @@
++New config format
++Perfomance fixing
+	- caching image's statistic on program starting (all or not all) to file.
+	- multithreading?
 +Depend configs changing
 	- space triming
 	- multi-colored strings
 	- image format adding
-+Programs runs in updateScrips closes with the main program <-- fix it
-+Perfomance fixing
-	- caching image's statistic on program starting (all or not all) to file.
-	- multithreading?
-+New config format
-+Fix memory leaks
 +Add recursive directory reading
++Fix memory leaks with JPEGs
++Programs runs in updateScrips closes with the main program <-- fix it

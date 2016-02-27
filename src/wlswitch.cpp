@@ -102,7 +102,7 @@ void Wlswitch::switchWallpaper()
         vector<string> namesList;
         string resultFilename;
         DIR *d = NULL;
-        struct dirent *dentry = NULL;
+        struct dirent* dentry = NULL;
         string tempFilename;
         /*
             In current directory we get the list of images (jpg, png) and puts it to
@@ -120,21 +120,25 @@ void Wlswitch::switchWallpaper()
                 }
             }
             srand (time (NULL));
-            unsigned long int randNum = rand() % namesList.size();
-            resultFilename = namesList[randNum];
+            if (namesList.size() != 0) {
 
+                unsigned long int randNum = rand() % namesList.size();
+                resultFilename = namesList[randNum];
+            }else
+                cerr << "Current wallpaper directory has no images!" << endl;
+            closedir(d);
+            free(dentry);
         } else
             cerr << "Error while wallpapers directory opening! Correct this path in config file!" << endl << (string)"Wrong path: " + currentDir << endl;
+        if (resultFilename != ""){
 
-        currentWallpaper = currentDir + resultFilename;
-        string temp = switcherProgram + (string)" " + switcherArguments + (string)" " + currentWallpaper;
-        system(temp.c_str());
+            currentWallpaper = currentDir + resultFilename;
+            string temp = switcherProgram + (string)" " + switcherArguments + (string)" " + currentWallpaper;
+            system(temp.c_str());
 
-        //Computing wallpaper's characteristics.
-        getMean();
-
-        closedir(d);
-        free(dentry);
+            //Computing wallpaper's characteristics.
+            calculateMarkers();
+        }
     }
     else
         cerr << "Error while wallpaper switching! Path is not set in the config file!" << endl;
@@ -361,34 +365,30 @@ void Wlswitch::replaceMarker(string oldMarker, string newMarker)
     */
 }
 
-void Wlswitch::getMean()
+void Wlswitch::calculateMarkers()
 {
     /*
         Calculating some characteristics of the wallpaper picture for e.g. average color (avg) e.t.c
     */
-    if (configLoaded){
-        //Using for converting int to hex string.
+    if (currentWallpaper != ""){
+
         stringstream convertStream;
-        Image wallpaperImage;
+        //Using for converting int to hex string.
+        Image* wallpaperImage = new Image;
         Image::ImageStatistics wallpaperImageStats;
-	
         try
         {
-            wallpaperImage.read(currentWallpaper);
+            wallpaperImage->read(currentWallpaper);
         }
         catch(Exception &error_ )
         {
             cerr << "Error while opening wallpaper file! Please check your config file!" << endl;
+            return;
         }
 
-        try
-        {
-            wallpaperImage.statistics(&wallpaperImageStats);
-        }
-        catch(Exception &error_ )
-        {
-            cerr << "Error while getting wallpaper statistics! Please check your config file!" << endl;
-        }
+        wallpaperImage->statistics(&wallpaperImageStats);
+        delete wallpaperImage;
+
         unsigned int r, g, b;
         //Adduction the (0.0; 65535.0) numbers to (0; 255) format using magic number (65535).
         //In specification sayed that it must match (0.0; 1.0) format, but on my machine is not so.
