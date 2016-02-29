@@ -41,9 +41,6 @@ Wlswitch::Wlswitch(string path, string newDelay)
     currentDir = path;
     delay = newDelay;
     loadConfig();
-    if (!configLoaded)
-        cerr << "Error while config loading! Put the config file  to the ~/.config/wlswitch/wlswitch.conf!" << endl;
-
 }
 
 Wlswitch::~Wlswitch() {}
@@ -55,7 +52,6 @@ void Wlswitch::loadConfig()
     int k = 0;
 
     switcherArguments = "";
-    configLoaded = false;
     string configPath = (homePath + (string)"/.config/wlswitch/wlswitch.conf");
 
     fin.open(configPath);
@@ -80,24 +76,18 @@ void Wlswitch::loadConfig()
     if (!fin.is_open())
         return;
 
+    char tempString[1000];
+
     while (!fin.eof()) {
 
-        fin >> word[k];
-        k++;
-        //Every three word puts to parser.
-        if (3 == k) {
-
-            k = 0;
-            parseConfig(word);
-        }
+        fin.getline(tempString, 1000);
+        parseConfig((string)tempString);
     }
-
-    configLoaded = true;
 }
 
 void Wlswitch::switchWallpaper()
 {
-    if (currentDir != ""){
+    if (currentDir != "" && switcherProgram != ""){
 
         vector<string> namesList;
         string resultFilename;
@@ -141,85 +131,105 @@ void Wlswitch::switchWallpaper()
         }
     }
     else
-        cerr << "Error while wallpaper switching! Path is not set in the config file!" << endl;
+        cerr << "Error while wallpaper switching! Path or switcher program is not set in the config file!" << endl;
 }
 
 void Wlswitch::updateDependConfigs()
 {
     loadConfig();
-    if (shellProgram != "" && updateScript != "" && configLoaded){
+    if (shellProgram != "" && updateScript != ""){
 
         string temp = shellProgram + (string)" " + updateScript;
         system(temp.c_str());
     }
 }
 
-void Wlswitch::parseConfig(string* words)
+void Wlswitch::parseConfig(string line)
 {
-    if(words[2] == ";") {
-        //Path setting
-        if (words[0] == "path") {
-            //Simple path validating. Path should begin and ends with "/" symbol.
-            if (words[1].at(0) == words[1].at(words[1].length() - 1) && words[1][0] == '/')
-                currentDir = words[1];
-            else
-                cerr << "Error while wallpapers directory opening! Path should begin and ends with / symbol!" << endl;
+    //Ignoring lines which contain '#' symbol
+    if (line.find('#', 0) != string::npos)
+        return;
+    //Ignoring empty lines
+    if (line.length() == 0)
+        return;
+    if (line.find('=', 0) != string::npos){
+
+        string leftOperand = line.substr(0, line.find('=', 0));
+        string rightOperand = line.substr(line.find('=', 0) + 1, line.length() - line.find('=', 0));
+        unsigned int i = 0;
+        bool inQuoteFlag = false;
+        bool parityQuotesCountFlag = true;
+
+        //Checking quotes count
+        for (i = 0; i <rightOperand.length(); i++)
+            if(rightOperand[i] == '"')
+                parityQuotesCountFlag = !parityQuotesCountFlag;
+        i = 0;
+        if (!parityQuotesCountFlag){
+
+            cerr << "Error while parsing config line! There is no closing quote!" << endl << "Line: <" << line << ">" << endl;
+            return;
         }
-        else
-            //Wallpaper switcher program setting
-            if (words[0] == "switcher") {
+        //Deleting spaces and tabulations from leftOperand string
+        i = 0;
+        while (i <= leftOperand.length()){
 
-                switcherProgram = words[1];
-            }
-        else
-            //Delay setting
-            if (words[0] == "delay") {
+            if (leftOperand[i] == ' ' || leftOperand[i] == '\t')
+                leftOperand.erase(i, 1);
+            else
+                i++;
+        }
+        //Deleting spaces and tabulations from non-quoted rightOperand string parts
+        i = 0;
+        while (i <= rightOperand.length()){
 
-                delay = words[1];
-            }
+            if(rightOperand[i] == '\"')
+                inQuoteFlag = !inQuoteFlag;
+            if (!inQuoteFlag && (rightOperand[i] == ' ' || rightOperand[i] == '\t'))
+                rightOperand.erase(i, 1);
+            else
+                i++;
+        }
+        //Deleting quotes from rightOperand string.
+        i = 0;
+        while (i <= rightOperand.length()){
 
-        else
-            //Switcher program argument setting
-            if (words[0] == "argument") {
+            if(rightOperand[i] == '\"')
+                rightOperand.erase(i, 1);
+            i++;
+        }
 
-                switcherArguments += words[1] + (string)" ";
-            }
+        //Checking leftOperand for markers or config flags
+        //Path setting
+        if (leftOperand == "path")
+            currentDir = rightOperand;
+        //Wallpaper switcher program setting
+        if (leftOperand == "switcher")
+            switcherProgram = rightOperand;
+        //Delay setting
+        if (leftOperand == "delay")
+            delay = rightOperand;
+        //Switcher program argument setting
+        if (leftOperand == "argument")
+            switcherArguments += rightOperand + (string)" ";
+        //Update script path setting
+        if (leftOperand == "updateScript")
+            updateScript = rightOperand;
+        //Shell program setting
+        if (leftOperand == "shellProgram")
+            shellProgram = rightOperand;
+        //Current depend config path setting
+        if (leftOperand == "dependConfig")
+            currentDependConfig = rightOperand;
 
-        else
-            //Update script path
-            if (words[0] == "updateScript") {
-
-                updateScript = words[1];
-            }
-
-        else
-            //Shell program
-            if (words[0] == "shellProgram") {
-
-                shellProgram = words[1];
-            }
-
-        else
-            //Current depend config path setting
-            if (words[0] == "dependConfig") {
-
-                currentDependConfig = words[1];
-            }
-
-        else
-            //Average color of the wallpaper marker
-            if (words[1] == "avg") {
-
-                replaceMarker(words[0], avgMarker);
-            }
-
-        else
-            //Average color of the wallpaper marker
-            if (words[1] == "avgInvert") {
-
-                replaceMarker(words[0], avgInvertMarker);
-            }
-    }
+        //Average color of the wallpaper marker
+        if (rightOperand == "avg")
+            replaceMarker(leftOperand, avgMarker);
+        //Invert average color of the wallpaper marker
+        if (rightOperand == "avgInvert")
+            replaceMarker(leftOperand, avgInvertMarker);
+    } else
+        cerr << "Error while parsing config line! There is no \'=\' symbol!" << endl << "Line: <" << line << ">" << endl;
 }
 
 unsigned int Wlswitch::waitDelay()

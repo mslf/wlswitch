@@ -1,4 +1,3 @@
-+New config format
 +Perfomance fixing
 	- caching image's statistic on program starting (all or not all) to file.
 	- multithreading?

@@ -23,7 +23,6 @@ using namespace std;
 int main()
 {
     Wlswitch wl;
-
     while (1) {
 
         wl.switchWallpaper();
@@ -31,6 +30,5 @@ int main()
         if (wl.waitDelay())
             return 0;
     }
-
     return 0;
 }

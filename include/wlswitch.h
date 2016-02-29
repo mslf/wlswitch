@@ -38,10 +38,9 @@ private:
     string meanRColor, meanGColor, meanBColor, meanWColor;
     string meanRColorInvert, meanGColorInvert, meanBColorInvert, meanWColorInvert;
     string currentDependConfig;
-    bool configLoaded;
 
     void loadConfig();
-    void parseConfig(string* words);
+    void parseConfig(string line);
     void replaceMarker(string oldMarker, string newMarker);
     void calculateMarkers();
 
