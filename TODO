@@ -1,6 +1,3 @@
-+Perfomance fixing
-	- caching image's statistic on program starting (all or not all) to file.
-	- multithreading?
 +Depend configs changing
 	- space triming
 	- multi-colored strings
@@ -8,3 +5,4 @@
 +Add recursive directory reading
 +Fix memory leaks with JPEGs
 +Programs runs in updateScrips closes with the main program <-- fix it
++Multithreading(???)

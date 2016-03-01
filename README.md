@@ -17,7 +17,6 @@ And make:
 $ cmake CMakeLists.txt
 $ make
 ```
-## Install
-Use `install.sh` for creating `wlswitch` directory in your configs directory.
+
 ## Usage
 `wlswitch` depends on `Magick++` libary, please, install it in your system.

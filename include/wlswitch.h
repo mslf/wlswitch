@@ -19,33 +19,36 @@
 #ifndef WLSWITCH_H_INCLUDED
 #define WLSWITCH_H_INCLUDED
 #include <string>
-using namespace std;
+#include <unordered_map>
+#include <Magick++.h>
 
 class Wlswitch
 {
 private:
-    string homePath;
-    string currentDir;
-    string switcherProgram;
-    string switcherArguments;
-    string delay;
-    string avgMarker;
-    string avgInvertMarker;
-    string currentWallpaper;
-    string updateScript;
-    string shellProgram;
-    //Script runs after depend configs updating
-    string meanRColor, meanGColor, meanBColor, meanWColor;
-    string meanRColorInvert, meanGColorInvert, meanBColorInvert, meanWColorInvert;
-    string currentDependConfig;
+    std::string homePath;
+    std::string currentDir;
+    std::string switcherProgram;
+    std::string switcherArguments;
+    std::string delay;
+    std::string currentDependConfig;
+    std::string currentWallpaper;
+    //Script runs after depend configs updating by shellProgram
+    std::string updateScript;
+    std::string shellProgram;
+
+    std::unordered_map<std::string, Magick::Image::ImageStatistics> statisticsContainer;
+    std::string meanRColor, meanGColor, meanBColor, meanWColor;
+    std::string meanRColorInvert, meanGColorInvert, meanBColorInvert, meanWColorInvert;
+    std::string avgMarker;
+    std::string avgInvertMarker;
 
     void loadConfig();
-    void parseConfig(string line);
-    void replaceMarker(string oldMarker, string newMarker);
+    void parseConfig(std::string line);
+    void replaceMarker(std::string oldMarker, std::string newMarker);
     void calculateMarkers();
 
 public:
-    Wlswitch(string path = "", string newDelay = "180");
+    Wlswitch(std::string path = "", std::string newDelay = "180");
     ~Wlswitch();
 
     void switchWallpaper();

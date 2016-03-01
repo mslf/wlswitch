@@ -31,13 +31,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-
-using namespace std;
-using namespace Magick;
-
-Wlswitch::Wlswitch(string path, string newDelay)
+Wlswitch::Wlswitch(std::string path, std::string newDelay)
 {
-    homePath = (string)getenv("HOME");
+    homePath = (std::string)getenv("HOME");
     currentDir = path;
     delay = newDelay;
     loadConfig();
@@ -47,28 +43,28 @@ Wlswitch::~Wlswitch() {}
 
 void Wlswitch::loadConfig()
 {
-    ifstream fin;
-    string word[3];
+    std::ifstream fin;
+    std::string word[3];
     int k = 0;
 
     switcherArguments = "";
-    string configPath = (homePath + (string)"/.config/wlswitch/wlswitch.conf");
+    std::string configPath = (homePath + (std::string)"/.config/wlswitch/wlswitch.conf");
 
     fin.open(configPath);
     if (!fin.is_open()){
 
-        string tempConfigDirPath = homePath + (string)"/.config/wlswitch/";
+        std::string tempConfigDirPath = homePath + (std::string)"/.config/wlswitch/";
         if (mkdir(tempConfigDirPath.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == 0)
-            cerr << "Created config directory in " << homePath << "/.config/" << endl;
-        ofstream fout;
+            std::cerr << "Created config directory in " << homePath << "/.config/" << std::endl;
+        std::ofstream fout;
         fout.open(configPath);
        if (fout.is_open()){
 
-            cerr << "Created clean config " << homePath << "/.config/wlswitch" << endl;
+           std::cerr << "Created clean config " << homePath << "/.config/wlswitch" << std::endl;
             fout.close();
         }
         else
-           cerr << "Error while creating clean config! " << homePath << "/.config/wlswitch" << endl;
+           std::cerr << "Error while creating clean config! " << homePath << "/.config/wlswitch" << std::endl;
     }
     fin.close();
     fin.open(configPath);
@@ -81,7 +77,7 @@ void Wlswitch::loadConfig()
     while (!fin.eof()) {
 
         fin.getline(tempString, 1000);
-        parseConfig((string)tempString);
+        parseConfig((std::string)tempString);
     }
 }
 
@@ -89,11 +85,11 @@ void Wlswitch::switchWallpaper()
 {
     if (currentDir != "" && switcherProgram != ""){
 
-        vector<string> namesList;
-        string resultFilename;
+        std::vector<std::string> namesList;
+        std::string resultFilename;
         DIR *d = NULL;
         struct dirent* dentry = NULL;
-        string tempFilename;
+        std::string tempFilename;
         /*
             In current directory we get the list of images (jpg, png) and puts it to
             namesList string and count them.
@@ -103,8 +99,8 @@ void Wlswitch::switchWallpaper()
 
             while ((dentry = readdir(d)) != NULL){
 
-                tempFilename = (string)dentry->d_name;
-                if (tempFilename.find(".jpg", 0) != string::npos || tempFilename.find(".png", 0) != string::npos){
+                tempFilename = (std::string)dentry->d_name;
+                if (tempFilename.find(".jpg", 0) != std::string::npos || tempFilename.find(".png", 0) != std::string::npos){
 
                     namesList.push_back(tempFilename);
                 }
@@ -115,15 +111,15 @@ void Wlswitch::switchWallpaper()
                 unsigned long int randNum = rand() % namesList.size();
                 resultFilename = namesList[randNum];
             }else
-                cerr << "Current wallpaper directory has no images!" << endl;
+                std::cerr << "Current wallpaper directory has no images!" << std::endl;
             closedir(d);
             free(dentry);
         } else
-            cerr << "Error while wallpapers directory opening! Correct this path in config file!" << endl << (string)"Wrong path: " + currentDir << endl;
+            std::cerr << "Error while wallpapers directory opening! Correct this path in config file!" << std::endl << (std::string)"Wrong path: " + currentDir << std::endl;
         if (resultFilename != ""){
 
             currentWallpaper = currentDir + resultFilename;
-            string temp = switcherProgram + (string)" " + switcherArguments + (string)" " + currentWallpaper;
+            std::string temp = switcherProgram + (std::string)" " + switcherArguments + (std::string)" " + currentWallpaper;
             system(temp.c_str());
 
             //Computing wallpaper's characteristics.
@@ -131,7 +127,7 @@ void Wlswitch::switchWallpaper()
         }
     }
     else
-        cerr << "Error while wallpaper switching! Path or switcher program is not set in the config file!" << endl;
+        std::cerr << "Error while wallpaper switching! Path or switcher program is not set in the config file!" << std::endl;
 }
 
 void Wlswitch::updateDependConfigs()
@@ -139,23 +135,23 @@ void Wlswitch::updateDependConfigs()
     loadConfig();
     if (shellProgram != "" && updateScript != ""){
 
-        string temp = shellProgram + (string)" " + updateScript;
+        std::string temp = shellProgram + (std::string)" " + updateScript;
         system(temp.c_str());
     }
 }
 
-void Wlswitch::parseConfig(string line)
+void Wlswitch::parseConfig(std::string line)
 {
     //Ignoring lines which contain '#' symbol
-    if (line.find('#', 0) != string::npos)
+    if (line.find('#', 0) != std::string::npos)
         return;
     //Ignoring empty lines
     if (line.length() == 0)
         return;
-    if (line.find('=', 0) != string::npos){
+    if (line.find('=', 0) != std::string::npos){
 
-        string leftOperand = line.substr(0, line.find('=', 0));
-        string rightOperand = line.substr(line.find('=', 0) + 1, line.length() - line.find('=', 0));
+        std::string leftOperand = line.substr(0, line.find('=', 0));
+        std::string rightOperand = line.substr(line.find('=', 0) + 1, line.length() - line.find('=', 0));
         unsigned int i = 0;
         bool inQuoteFlag = false;
         bool parityQuotesCountFlag = true;
@@ -167,7 +163,7 @@ void Wlswitch::parseConfig(string line)
         i = 0;
         if (!parityQuotesCountFlag){
 
-            cerr << "Error while parsing config line! There is no closing quote!" << endl << "Line: <" << line << ">" << endl;
+            std::cerr << "Error while parsing config line! There is no closing quote!" << std::endl << "Line: <" << line << ">" << std::endl;
             return;
         }
         //Deleting spaces and tabulations from leftOperand string
@@ -211,7 +207,7 @@ void Wlswitch::parseConfig(string line)
             delay = rightOperand;
         //Switcher program argument setting
         if (leftOperand == "argument")
-            switcherArguments += rightOperand + (string)" ";
+            switcherArguments += rightOperand + (std::string)" ";
         //Update script path setting
         if (leftOperand == "updateScript")
             updateScript = rightOperand;
@@ -229,7 +225,7 @@ void Wlswitch::parseConfig(string line)
         if (rightOperand == "avgInvert")
             replaceMarker(leftOperand, avgInvertMarker);
     } else
-        cerr << "Error while parsing config line! There is no \'=\' symbol!" << endl << "Line: <" << line << ">" << endl;
+        std::cerr << "Error while parsing config line! There is no \'=\' symbol!" << std::endl << "Line: <" << line << ">" << std::endl;
 }
 
 unsigned int Wlswitch::waitDelay()
@@ -237,37 +233,37 @@ unsigned int Wlswitch::waitDelay()
     return sleep (stoi (delay));
 }
 
-void Wlswitch::replaceMarker(string oldMarker, string newMarker)
+void Wlswitch::replaceMarker(std::string oldMarker, std::string newMarker)
 {
-    fstream fio;
-    string maskConfigString = (string)"###<MASK_CONFIG_LINE> " + oldMarker + (string)" ";
-    string errorMessage = "Error while depend config opening! Correct the depend config path in ~/.config/wlswitch/wlswitch.conf!\n";
+    std::fstream fio;
+    std::string maskConfigString = (std::string)"###<MASK_CONFIG_LINE> " + oldMarker + (std::string)" ";
+    std::string errorMessage = "Error while depend config opening! Correct the depend config path in ~/.config/wlswitch/wlswitch.conf!\n";
 
     char temp_strLine[1000];
     //Yes,in  lines bigger than 1000 chars only 1000 will be processed.
 
-    string strLine;
-    string fileContain;
-    string oldMask;
-    string newMask;
+    std::string strLine;
+    std::string fileContain;
+    std::string oldMask;
+    std::string newMask;
 
     bool inAutoBlock = false;
     bool maskConfigured = false;
 
-    fio.open(currentDependConfig, ios_base::in);
+    fio.open(currentDependConfig, std::ios_base::in);
     if (!fio.is_open())
-        cerr << errorMessage;
+        std::cerr << errorMessage;
 
     while (!fio.eof()){
 
         fio.getline(temp_strLine, 1000);
-        strLine = (string)temp_strLine;
+        strLine = (std::string)temp_strLine;
 
-        if (strLine.find("###<WLSWITCH_AUTO>", 0) != string::npos)
+        if (strLine.find("###<WLSWITCH_AUTO>", 0) != std::string::npos)
             inAutoBlock = true;
-        if (strLine.find("###</WLSWITCH_AUTO>", 0) != string::npos)
+        if (strLine.find("###</WLSWITCH_AUTO>", 0) != std::string::npos)
             inAutoBlock = false;
-        if (strLine.find(maskConfigString, 0) != string::npos && inAutoBlock){
+        if (strLine.find(maskConfigString, 0) != std::string::npos && inAutoBlock){
 
             int position = strLine.find(maskConfigString, 0);
 
@@ -275,23 +271,23 @@ void Wlswitch::replaceMarker(string oldMarker, string newMarker)
             oldMask = strLine.substr(position + 1, strLine.find("#", position + 1) - position - 1);
             position = strLine.find("#", strLine.find("#", position + 1) + 1);
             newMask = strLine.substr(position + 1, strLine.find("#", position + 1) - position - 1);
-            if (newMask.find("%", 0) == string::npos)
-                cerr << "Warning! New mask has no % symbol. Is this error?\nLine: " << strLine << endl;
+            if (newMask.find("%", 0) == std::string::npos)
+                std::cerr << "Warning! New mask has no % symbol. Is this error?\nLine: " << strLine << std::endl;
             else
                 newMask.replace(newMask.find("%", 0), 1, newMarker);
 
             maskConfigured = true;
         }
 
-        if (strLine.find((string)"###<AUTO_CONFIG_LINE_ONES> " + oldMarker, 0) != string::npos && inAutoBlock && maskConfigured){
+        if (strLine.find((std::string)"###<AUTO_CONFIG_LINE_ONES> " + oldMarker, 0) != std::string::npos && inAutoBlock && maskConfigured){
 
-            regex pattern (oldMask, regex::ECMAScript);
-            smatch m;
+            std::regex pattern (oldMask, std::regex::ECMAScript);
+            std::smatch m;
             //For matching result
-            fileContain += strLine + (string)"\n";
+            fileContain += strLine + (std::string)"\n";
             //Next line after ###<AUTO_CONFIG_LINE_ONES> will be modified
             fio.getline(temp_strLine, 1000);
-            strLine = (string)temp_strLine;
+            strLine = (std::string)temp_strLine;
 
             if (newMarker != ""){
 
@@ -301,7 +297,7 @@ void Wlswitch::replaceMarker(string oldMarker, string newMarker)
                     strLine.replace(m.position(), m.str().length(), oldMarker);
                 }
                 //Replacing all oldMarker sequences to newMarker
-                while (strLine.find(oldMarker, 0) != string::npos){
+                while (strLine.find(oldMarker, 0) != std::string::npos){
 
                     strLine.replace(strLine.find(oldMarker, 0), oldMarker.length(), newMask);
                 }
@@ -333,15 +329,15 @@ void Wlswitch::replaceMarker(string oldMarker, string newMarker)
                 }
             }
         }*///TODO
-        fileContain += strLine + (string)"\n";
+        fileContain += strLine + (std::string)"\n";
     }
 
     fio.close();
     //Saving to file
-    fio.open(currentDependConfig, ios_base::out);
+    fio.open(currentDependConfig, std::ios_base::out);
     if (!fio.is_open())
-        cerr << errorMessage;
-    fio.seekp(0, ios_base::beg);
+        std::cerr << errorMessage;
+    fio.seekp(0, std::ios_base::beg);
     fileContain.erase(fileContain.length() - 1, 1);//Deleting \n symbol.
     fio << fileContain;
     fio.close();
@@ -372,7 +368,7 @@ void Wlswitch::replaceMarker(string oldMarker, string newMarker)
                 the ${color 2E2E2E} will be replaced with color_1 marker (for e.g. avg)
                 the ${color 2A2A2A} will be replaced with color_2 marker (for e.g. avg_w)
                 the ${color 1E2E3E} will be replaced with color_3 marker (for e.g. avg_b)
-    */
+    *///TODO into doc
 }
 
 void Wlswitch::calculateMarkers()
@@ -382,22 +378,37 @@ void Wlswitch::calculateMarkers()
     */
     if (currentWallpaper != ""){
 
-        stringstream convertStream;
+        std::stringstream convertStream;
         //Using for converting int to hex string.
-        Image* wallpaperImage = new Image;
-        Image::ImageStatistics wallpaperImageStats;
+        Magick::Image* wallpaperImage = new Magick::Image;
+        Magick::Image::ImageStatistics wallpaperImageStats;
         try
         {
             wallpaperImage->read(currentWallpaper);
         }
-        catch(Exception &error_ )
+        catch(Magick::Exception &error_ )
         {
-            cerr << "Error while opening wallpaper file! Please check your config file!" << endl;
+            std::cerr << "Error while opening wallpaper file! Please check your config file!" << std::endl;
             return;
         }
+        std::unordered_map<std::string, Magick::Image::ImageStatistics>::const_iterator got = statisticsContainer.find(currentWallpaper);
 
-        wallpaperImage->statistics(&wallpaperImageStats);
+        if (got == statisticsContainer.end()){
+
+            wallpaperImage->statistics(&wallpaperImageStats);
+            std::pair<std::string, Magick::Image::ImageStatistics> pairToAdd (currentWallpaper, wallpaperImageStats);
+            statisticsContainer.insert(pairToAdd);
+            std::cout << "Added: " << currentWallpaper << " to statistics container." << std::endl;
+        }
+        else{
+
+            wallpaperImageStats = got->second;
+            std::cout << "Readed: " << currentWallpaper << " from statistics container." << std::endl;
+        }
+
+
         delete wallpaperImage;
+
 
         unsigned int r, g, b;
         //Adduction the (0.0; 65535.0) numbers to (0; 255) format using magic number (65535).
@@ -406,12 +417,16 @@ void Wlswitch::calculateMarkers()
         g = (unsigned int)(wallpaperImageStats.green.mean / 65535 * 255);
         b = (unsigned int)(wallpaperImageStats.blue.mean / 65535 * 255);
 
-        convertStream << setw(2) << setfill('0') << hex << r << setw(2) << setfill('0') << hex << g << setw(2) << setfill('0') << hex << b;
-        avgMarker = (string)"#" + convertStream.str();
+        convertStream << std::setw(2) << std::setfill('0') << std::hex << r;
+        convertStream << std::setw(2) << std::setfill('0') << std::hex << g;
+        convertStream << std::setw(2) << std::setfill('0') << std::hex << b;
+        avgMarker = (std::string)"#" + convertStream.str();
         convertStream.str("0");
 
-        convertStream << setw(2) << setfill('0') << hex << (255 - r) << setw(2) << setfill('0') << hex << (255 - g) << setw(2) << setfill('0') << hex << (255 - b);
-        avgInvertMarker = (string)"#" + convertStream.str();
+        convertStream << std::setw(2) << std::setfill('0') << std::hex << (255 - r);
+        convertStream << std::setw(2) << std::setfill('0') << std::hex << (255 - g);
+        convertStream << std::setw(2) << std::setfill('0') << std::hex << (255 - b);
+        avgInvertMarker = (std::string)"#" + convertStream.str();
         convertStream.str("0");
     }
 }

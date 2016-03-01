@@ -18,7 +18,6 @@
 */
 #include <iostream>
 #include "wlswitch.h"
-using namespace std;
 
 int main()
 {
