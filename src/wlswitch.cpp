@@ -398,14 +398,9 @@ void Wlswitch::calculateMarkers()
             wallpaperImage->statistics(&wallpaperImageStats);
             std::pair<std::string, Magick::Image::ImageStatistics> pairToAdd (currentWallpaper, wallpaperImageStats);
             statisticsContainer.insert(pairToAdd);
-            std::cout << "Added: " << currentWallpaper << " to statistics container." << std::endl;
         }
-        else{
-
+        else
             wallpaperImageStats = got->second;
-            std::cout << "Readed: " << currentWallpaper << " from statistics container." << std::endl;
-        }
-
 
         delete wallpaperImage;
 
