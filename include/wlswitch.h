@@ -42,10 +42,13 @@ private:
     std::string avgMarker;
     std::string avgInvertMarker;
 
+    std::string threeIntsToHexString(unsigned int a, unsigned int b, unsigned int c);
+    std::string deleteExtraSpaces(std::string src);
     void loadConfig();
     void parseConfig(std::string line);
     void replaceMarker(std::string oldMarker, std::string newMarker);
     void calculateMarkers();
+
 
 public:
     Wlswitch(std::string path = "", std::string newDelay = "180");

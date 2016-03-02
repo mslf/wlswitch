@@ -1,5 +1,4 @@
 +Depend configs changing
-	- space triming
 	- multi-colored strings
 	- image format adding
 +Add recursive directory reading

@@ -236,7 +236,6 @@ unsigned int Wlswitch::waitDelay()
 void Wlswitch::replaceMarker(std::string oldMarker, std::string newMarker)
 {
     std::fstream fio;
-    std::string maskConfigString = (std::string)"###<MASK_CONFIG_LINE> " + oldMarker + (std::string)" ";
     std::string errorMessage = "Error while depend config opening! Correct the depend config path in ~/.config/wlswitch/wlswitch.conf!\n";
 
     char temp_strLine[1000];
@@ -263,46 +262,48 @@ void Wlswitch::replaceMarker(std::string oldMarker, std::string newMarker)
             inAutoBlock = true;
         if (strLine.find("###</WLSWITCH_AUTO>", 0) != std::string::npos)
             inAutoBlock = false;
-        if (strLine.find(maskConfigString, 0) != std::string::npos && inAutoBlock){
+        if (strLine.find("###<MASK_CONFIG_LINE>", 0) != std::string::npos && inAutoBlock){
 
-            int position = strLine.find(maskConfigString, 0);
+            strLine = deleteExtraSpaces(strLine);
+            if (strLine.find(oldMarker, 0) != std::string::npos){
 
-            position = strLine.find("#", position + maskConfigString.length());
-            oldMask = strLine.substr(position + 1, strLine.find("#", position + 1) - position - 1);
-            position = strLine.find("#", strLine.find("#", position + 1) + 1);
-            newMask = strLine.substr(position + 1, strLine.find("#", position + 1) - position - 1);
-            if (newMask.find("%", 0) == std::string::npos)
-                std::cerr << "Warning! New mask has no % symbol. Is this error?\nLine: " << strLine << std::endl;
-            else
-                newMask.replace(newMask.find("%", 0), 1, newMarker);
+                int position = strLine.find(oldMarker, 0);
+                position = strLine.find("#", position + oldMarker.length());
+                oldMask = strLine.substr(position + 1, strLine.find("#", position + 1) - position - 1);
+                position = strLine.find("#", strLine.find("#", position + 1) + 1);
+                newMask = strLine.substr(position + 1, strLine.find("#", position + 1) - position - 1);
+                if (newMask.find("%", 0) == std::string::npos)
+                    std::cerr << "Warning! New mask has no % symbol. Is this error?\nLine: " << strLine << std::endl;
+                else
+                    newMask.replace(newMask.find("%", 0), 1, newMarker);
 
-            maskConfigured = true;
-        }
-
-        if (strLine.find((std::string)"###<AUTO_CONFIG_LINE_ONES> " + oldMarker, 0) != std::string::npos && inAutoBlock && maskConfigured){
-
-            std::regex pattern (oldMask, std::regex::ECMAScript);
-            std::smatch m;
-            //For matching result
-            fileContain += strLine + (std::string)"\n";
-            //Next line after ###<AUTO_CONFIG_LINE_ONES> will be modified
-            fio.getline(temp_strLine, 1000);
-            strLine = (std::string)temp_strLine;
-
-            if (newMarker != ""){
-
-                //Replacing all pattern sequences to oldMarker
-                while (regex_search(strLine, m, pattern)){
-
-                    strLine.replace(m.position(), m.str().length(), oldMarker);
-                }
-                //Replacing all oldMarker sequences to newMarker
-                while (strLine.find(oldMarker, 0) != std::string::npos){
-
-                    strLine.replace(strLine.find(oldMarker, 0), oldMarker.length(), newMask);
-                }
+                maskConfigured = true;
             }
         }
+        if (strLine.find((std::string)"###<AUTO_CONFIG_LINE_ONES>", 0) != std::string::npos && inAutoBlock && maskConfigured)
+            if (strLine.find(oldMarker, strLine.find((std::string)"###<AUTO_CONFIG_LINE_ONES>", 0)) != std::string::npos){
+                std::regex pattern (oldMask, std::regex::ECMAScript);
+                std::smatch m;
+                //For matching result
+                fileContain += strLine + (std::string)"\n";
+                //Next line after ###<AUTO_CONFIG_LINE_ONES> will be modified
+                fio.getline(temp_strLine, 1000);
+                strLine = (std::string)temp_strLine;
+
+                if (newMarker != ""){
+
+                    //Replacing all pattern sequences to oldMarker
+                    while (regex_search(strLine, m, pattern)){
+
+                        strLine.replace(m.position(), m.str().length(), oldMarker);
+                    }
+                    //Replacing all oldMarker sequences to newMarker
+                    while (strLine.find(oldMarker, 0) != std::string::npos){
+
+                        strLine.replace(strLine.find(oldMarker, 0), oldMarker.length(), newMask);
+                    }
+                }
+            }
         /*
         if (strLine.find("###<AUTO_CONFIG_LINE_ONE>", 0) != string::npos && inAutoBlock && maskConfigured){
 
@@ -378,8 +379,6 @@ void Wlswitch::calculateMarkers()
     */
     if (currentWallpaper != ""){
 
-        std::stringstream convertStream;
-        //Using for converting int to hex string.
         Magick::Image* wallpaperImage = new Magick::Image;
         Magick::Image::ImageStatistics wallpaperImageStats;
         try
@@ -412,16 +411,39 @@ void Wlswitch::calculateMarkers()
         g = (unsigned int)(wallpaperImageStats.green.mean / 65535 * 255);
         b = (unsigned int)(wallpaperImageStats.blue.mean / 65535 * 255);
 
-        convertStream << std::setw(2) << std::setfill('0') << std::hex << r;
-        convertStream << std::setw(2) << std::setfill('0') << std::hex << g;
-        convertStream << std::setw(2) << std::setfill('0') << std::hex << b;
-        avgMarker = (std::string)"#" + convertStream.str();
-        convertStream.str("0");
-
-        convertStream << std::setw(2) << std::setfill('0') << std::hex << (255 - r);
-        convertStream << std::setw(2) << std::setfill('0') << std::hex << (255 - g);
-        convertStream << std::setw(2) << std::setfill('0') << std::hex << (255 - b);
-        avgInvertMarker = (std::string)"#" + convertStream.str();
-        convertStream.str("0");
+        avgMarker = threeIntsToHexString(r, g, b);
+        avgInvertMarker = threeIntsToHexString(255 - r, 255 - g, 255 - b);
     }
+}
+
+std::string Wlswitch::threeIntsToHexString(unsigned int a, unsigned int b, unsigned int c)
+{
+    std::stringstream convertStream;
+    //Using for converting int to hex string.
+    convertStream << std::setw(2) << std::setfill('0') << std::hex << a;
+    convertStream << std::setw(2) << std::setfill('0') << std::hex << b;
+    convertStream << std::setw(2) << std::setfill('0') << std::hex << c;
+    return ((std::string)"#" + convertStream.str());
+}
+
+std::string Wlswitch::deleteExtraSpaces(std::string src)
+{
+    unsigned int i = 0;
+    unsigned int j = 0;
+    //Replace all tabulations by space symbols.
+    while (src.find('\t', 0) != std::string::npos)
+        src[src.find('\t', 0)] =  ' ';
+    //Delete all spaces before text begining.
+    while (src[0] == ' ')
+        src.erase(0, 1);
+    //Replace all sequences with spaces by first symbol.
+    i = 0;
+    while (src.find(' ', i) != std::string::npos){
+
+        j = src.find(' ', i);
+        while (src[j + 1] == ' ' && j < src.length() - 1)
+            src.erase(j + 1, 1);
+        i = j + 1;
+    }
+    return src;
 }
