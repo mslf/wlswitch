@@ -5,3 +5,4 @@
 +Fix memory leaks with JPEGs
 +Programs runs in updateScrips closes with the main program <-- fix it
 +Multithreading(???)
++Manual switching wallpaper

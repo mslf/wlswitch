@@ -44,6 +44,7 @@ private:
 
     std::string threeIntsToHexString(unsigned int a, unsigned int b, unsigned int c);
     std::string deleteExtraSpaces(std::string src);
+    std::size_t countSpacesBeforeFind(std::string src, std::string findSrc);
     void loadConfig();
     void parseConfig(std::string line);
     void replaceMarker(std::string oldMarker, std::string newMarker);

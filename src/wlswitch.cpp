@@ -93,7 +93,7 @@ void Wlswitch::switchWallpaper()
         /*
             In current directory we get the list of images (jpg, png) and puts it to
             namesList string and count them.
-            Then we random number between 0 and count of files and set the resultFilename to namesList[randNum].
+            Then we random number between 0 and count of files and set the resultFilename to namesList[randNum]
         */
         if ((d = opendir(currentDir.c_str())) != NULL){
 
@@ -122,7 +122,7 @@ void Wlswitch::switchWallpaper()
             std::string temp = switcherProgram + (std::string)" " + switcherArguments + (std::string)" " + currentWallpaper;
             system(temp.c_str());
 
-            //Computing wallpaper's characteristics.
+            //Computing wallpaper's characteristics
             calculateMarkers();
         }
     }
@@ -186,7 +186,7 @@ void Wlswitch::parseConfig(std::string line)
             else
                 i++;
         }
-        //Deleting quotes from rightOperand string.
+        //Deleting quotes from rightOperand string
         i = 0;
         while (i <= rightOperand.length()){
 
@@ -235,11 +235,17 @@ unsigned int Wlswitch::waitDelay()
 
 void Wlswitch::replaceMarker(std::string oldMarker, std::string newMarker)
 {
+    std::string autoBlockStartString = "###<WLSWITCH_AUTO>";
+    std::string autoBlockEndString = "###</WLSWITCH_AUTO>";
+    std::string maskConfigString = "###<MASK_CONFIG_LINE>";
+    std::string autoConfigLineOnesString = "###<AUTO_CONFIG_LINE_ONES>";
+    std::string autoConfigLineString = "###<AUTO_CONFIG_LINE>";
+
     std::fstream fio;
     std::string errorMessage = "Error while depend config opening! Correct the depend config path in ~/.config/wlswitch/wlswitch.conf!\n";
 
     char temp_strLine[1000];
-    //Yes,in  lines bigger than 1000 chars only 1000 will be processed.
+    //Yes,in  lines bigger than 1000 chars only 1000 will be processed
 
     std::string strLine;
     std::string fileContain;
@@ -257,12 +263,13 @@ void Wlswitch::replaceMarker(std::string oldMarker, std::string newMarker)
 
         fio.getline(temp_strLine, 1000);
         strLine = (std::string)temp_strLine;
-
-        if (strLine.find("###<WLSWITCH_AUTO>", 0) != std::string::npos)
+        //Auto block start and end
+        if (strLine.find(autoBlockStartString, 0) != std::string::npos)
             inAutoBlock = true;
-        if (strLine.find("###</WLSWITCH_AUTO>", 0) != std::string::npos)
+        if (strLine.find(autoBlockEndString, 0) != std::string::npos)
             inAutoBlock = false;
-        if (strLine.find("###<MASK_CONFIG_LINE>", 0) != std::string::npos && inAutoBlock){
+        //Mask configuring
+        if (strLine.find(maskConfigString, 0) != std::string::npos && inAutoBlock){
 
             strLine = deleteExtraSpaces(strLine);
             if (strLine.find(oldMarker, 0) != std::string::npos){
@@ -280,13 +287,14 @@ void Wlswitch::replaceMarker(std::string oldMarker, std::string newMarker)
                 maskConfigured = true;
             }
         }
-        if (strLine.find((std::string)"###<AUTO_CONFIG_LINE_ONES>", 0) != std::string::npos && inAutoBlock && maskConfigured)
-            if (strLine.find(oldMarker, strLine.find((std::string)"###<AUTO_CONFIG_LINE_ONES>", 0)) != std::string::npos){
+        //One-colored string's markers replacing
+        if (strLine.find(autoConfigLineOnesString, 0) != std::string::npos && inAutoBlock && maskConfigured)
+            if (strLine.find(oldMarker, strLine.find(autoConfigLineOnesString, 0)) != std::string::npos){
                 std::regex pattern (oldMask, std::regex::ECMAScript);
-                std::smatch m;
                 //For matching result
-                fileContain += strLine + (std::string)"\n";
+                std::smatch m;
                 //Next line after ###<AUTO_CONFIG_LINE_ONES> will be modified
+                fileContain += strLine + (std::string)"\n";
                 fio.getline(temp_strLine, 1000);
                 strLine = (std::string)temp_strLine;
 
@@ -304,32 +312,61 @@ void Wlswitch::replaceMarker(std::string oldMarker, std::string newMarker)
                     }
                 }
             }
-        /*
-        if (strLine.find("###<AUTO_CONFIG_LINE_ONE>", 0) != string::npos && inAutoBlock && maskConfigured){
+        //Multi-colored string's markers replacing
+        if (strLine.find(autoConfigLineString, 0) != std::string::npos && inAutoBlock && maskConfigured){
 
-            regex pattern (oldMask, regex::ECMAScript);
-            smatch m;
+            std::regex pattern (oldMask, std::regex::ECMAScript);
             //For matching result
-            strLine.t
+            std::smatch m;
+            std::string tempMarkerBase = "tempMarker";
+            std::vector<std::string> tempMarkers;
+            std::vector<std::string> tempMarkersSaved;
+            strLine = deleteExtraSpaces(strLine);
+            std::string markersString = strLine.substr(strLine.find(autoConfigLineString, 0) + autoConfigLineString.length() + 1, strLine.length() - autoConfigLineString.length());
+            //Deleting first space symbol if exist
+            markersString = deleteExtraSpaces(markersString);
+            //Counting spaces in string without oldMarker (spaceCount + 1 == oldMarker position in next line)
+            std::size_t spacesCount =  countSpacesBeforeFind(markersString, oldMarker);
+            //Next line after ###<AUTO_CONFIG_LINE> will be modified
             fileContain += strLine + "\n";
-            //Next line after ###<AUTO_CONFIG_LINE_ONES> will be modified
             fio.getline(temp_strLine, 1000);
-            strLine = (string)temp_strLine;
+            strLine = (std::string)temp_strLine;
 
             if (newMarker != ""){
 
-                //Replacing all pattern sequences to oldMarker
+                //Replacing only one pattern sequences, which have the same number as 'spaceCount + 1' to oldMarker
+                std::size_t currentMarkerPosition = 0;
+
                 while (regex_search(strLine, m, pattern)){
 
-                    strLine.replace(m.position(), m.str().length(), oldMarker);
+                    currentMarkerPosition++;
+                    if (currentMarkerPosition == spacesCount + 1){
+
+                        strLine.replace(m.position(), m.str().length(), oldMarker);
+                        //Delete oldMarker from markerString and recount spacesCount (for each oldMarker in string)
+                        if (markersString.find(oldMarker, 0) + oldMarker.length() + 1 < markersString.length())
+                            markersString = markersString.substr(markersString.find(oldMarker, 0) + oldMarker.length() + 1, markersString.length() - oldMarker.length());
+                        if (markersString.find(oldMarker, 0) != std::string::npos)
+                            spacesCount +=  countSpacesBeforeFind(markersString, oldMarker);
+                    }
+                    else{
+
+                        tempMarkersSaved.push_back(strLine.substr(m.position(), m.str().length()));
+                        strLine.replace(m.position(), m.str().length(), tempMarkerBase + (char)tempMarkersSaved.size());
+                        tempMarkers.push_back(tempMarkerBase + (char)tempMarkersSaved.size());
+                    }
+
                 }
                 //Replacing all oldMarker sequences to newMarker
-                while (strLine.find(oldMarker, 0) != string::npos){
+                while (strLine.find(oldMarker, 0) != std::string::npos){
 
                     strLine.replace(strLine.find(oldMarker, 0), oldMarker.length(), newMask);
                 }
+                //Replacing all tempMarker sequences to saved tempMarker
+                for (std::size_t i = 0; i < tempMarkers.size(); i++)
+                    strLine.replace(strLine.find(tempMarkers[i], 0), tempMarkers[i].length(), tempMarkersSaved[i]);
             }
-        }*///TODO
+        }//TODO
         fileContain += strLine + (std::string)"\n";
     }
 
@@ -339,7 +376,7 @@ void Wlswitch::replaceMarker(std::string oldMarker, std::string newMarker)
     if (!fio.is_open())
         std::cerr << errorMessage;
     fio.seekp(0, std::ios_base::beg);
-    fileContain.erase(fileContain.length() - 1, 1);//Deleting \n symbol.
+    fileContain.erase(fileContain.length() - 1, 1);//Deleting \n symbol
     fio << fileContain;
     fio.close();
     /*
@@ -355,6 +392,7 @@ void Wlswitch::replaceMarker(std::string oldMarker, std::string newMarker)
             ###<MASK_CONFIG_LINE> color_3 #${color *}# #${color %}#
 
             ###<AUTO_CONFIG_LINE> color_1 color_2 color_3
+            ###<AUTO_CONFIG_LINE>color_1 color_2 color_3
             CPU0: ${color 2E2E2E}${cpu cpu0} CPU1: ${color 2A2A2A}${cpu cpu1} CPU3: ${color 1E2E3E}${cpu cpu3}
             ###</WLSWITCH_AUTO>
 
@@ -405,8 +443,8 @@ void Wlswitch::calculateMarkers()
 
 
         unsigned int r, g, b;
-        //Adduction the (0.0; 65535.0) numbers to (0; 255) format using magic number (65535).
-        //In specification sayed that it must match (0.0; 1.0) format, but on my machine is not so.
+        //Adduction the (0.0; 65535.0) numbers to (0; 255) format using magic number (65535)
+        //In specification sayed that it must match (0.0; 1.0) format, but on my machine is not so
         r = (unsigned int)(wallpaperImageStats.red.mean / 65535 * 255);
         g = (unsigned int)(wallpaperImageStats.green.mean / 65535 * 255);
         b = (unsigned int)(wallpaperImageStats.blue.mean / 65535 * 255);
@@ -419,7 +457,7 @@ void Wlswitch::calculateMarkers()
 std::string Wlswitch::threeIntsToHexString(unsigned int a, unsigned int b, unsigned int c)
 {
     std::stringstream convertStream;
-    //Using for converting int to hex string.
+    //Using for converting int to hex string
     convertStream << std::setw(2) << std::setfill('0') << std::hex << a;
     convertStream << std::setw(2) << std::setfill('0') << std::hex << b;
     convertStream << std::setw(2) << std::setfill('0') << std::hex << c;
@@ -428,15 +466,17 @@ std::string Wlswitch::threeIntsToHexString(unsigned int a, unsigned int b, unsig
 
 std::string Wlswitch::deleteExtraSpaces(std::string src)
 {
-    unsigned int i = 0;
-    unsigned int j = 0;
-    //Replace all tabulations by space symbols.
+    std::size_t i = 0;
+    std::size_t j = 0;
+
+    //Replace all tabulations by space symbols
+
     while (src.find('\t', 0) != std::string::npos)
         src[src.find('\t', 0)] =  ' ';
-    //Delete all spaces before text begining.
+    //Delete all spaces before text begining
     while (src[0] == ' ')
         src.erase(0, 1);
-    //Replace all sequences with spaces by first symbol.
+    //Replace all sequences with spaces by first symbol
     i = 0;
     while (src.find(' ', i) != std::string::npos){
 
@@ -445,5 +485,23 @@ std::string Wlswitch::deleteExtraSpaces(std::string src)
             src.erase(j + 1, 1);
         i = j + 1;
     }
+
+    //Deleting space at the end of string if exist
+    if (src[src.length() - 1] == ' ')
+        src.erase(src.length() - 1, 1);
+
     return src;
+}
+
+std::size_t Wlswitch::countSpacesBeforeFind(std::string src, std::string findSrc)
+{
+    std::size_t spacesCount = 0;
+    std::size_t i = 0;
+    src = src.substr(0, src.find(findSrc, 0));
+    while (src.find(' ', i) != std::string::npos){
+
+        spacesCount++;
+        i = src.find(' ', i) + 1;
+    }
+    return spacesCount;
 }
