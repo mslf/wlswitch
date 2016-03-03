@@ -347,7 +347,7 @@ void Wlswitch::replaceMarker(std::string oldMarker, std::string newMarker)
                         if (markersString.find(oldMarker, 0) + oldMarker.length() + 1 < markersString.length())
                             markersString = markersString.substr(markersString.find(oldMarker, 0) + oldMarker.length() + 1, markersString.length() - oldMarker.length());
                         if (markersString.find(oldMarker, 0) != std::string::npos)
-                            spacesCount +=  countSpacesBeforeFind(markersString, oldMarker);
+                            spacesCount +=  countSpacesBeforeFind(markersString, oldMarker) + 1;
                     }
                     else{
 
