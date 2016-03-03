@@ -21,7 +21,7 @@
 #include <string>
 #include <unordered_map>
 #include <Magick++.h>
-
+#include "marker.h"
 class Wlswitch
 {
 private:
@@ -39,24 +39,21 @@ private:
     std::unordered_map<std::string, Magick::Image::ImageStatistics> statisticsContainer;
     std::string meanRColor, meanGColor, meanBColor, meanWColor;
     std::string meanRColorInvert, meanGColorInvert, meanBColorInvert, meanWColorInvert;
-    std::string avgMarker;
-    std::string avgInvertMarker;
+    std::vector<Marker> markers;
 
-    std::string threeIntsToHexString(std::size_t a, std::size_t b, std::size_t c);
     std::string deleteExtraSpaces(std::string src);
     std::size_t countSpacesBeforeFind(std::string src, std::string findSrc);
     void loadConfig();
     void parseConfig(std::string line);
     void replaceMarker(std::string oldMarker, std::string newMarker);
     void calculateMarkers();
-
-
 public:
     Wlswitch(std::string path = "", std::string newDelay = "180");
-    ~Wlswitch();
 
     void switchWallpaper();
     void updateDependConfigs();
     unsigned int waitDelay();
+
+    ~Wlswitch();
 };
 #endif // WLSWITCH_H_INCLUDED

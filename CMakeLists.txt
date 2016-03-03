@@ -20,11 +20,14 @@ include_directories(./include)
 
 set(SOURCE_EXUTABLE ./src/main.cpp)		
 
-set(SOURCE_LIB ./src/wlswitch.cpp)			
+set(SOURCE_Wlswitch_LIB ./src/wlswitch.cpp)
+set(SOURCE_Marker_LIB ./src/marker.cpp)
 
-add_library(wlswitch_lib STATIC ${SOURCE_LIB})	
+add_library(wlswitch_lib STATIC ${SOURCE_Wlswitch_LIB})
+add_library(marker_lib STATIC ${SOURCE_Marker_LIB})
 
 add_executable(wlswitch ${SOURCE_EXUTABLE})	
 
-target_link_libraries(wlswitch_lib ${ImageMagick_LIBRARIES})		
+target_link_libraries(wlswitch_lib ${ImageMagick_LIBRARIES})
+target_link_libraries(wlswitch_lib marker_lib)
 target_link_libraries(wlswitch wlswitch_lib)

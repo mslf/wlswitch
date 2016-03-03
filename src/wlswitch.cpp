@@ -17,11 +17,11 @@
 	along with wlswitch. If not, see <http://www.gnu.org/licenses/>.
 */
 #include "wlswitch.h"
+#include "marker.h"
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
-#include <sstream>
-#include <iomanip>
+
 #include <fstream>
 #include <unistd.h>
 #include <dirent.h>
@@ -37,6 +37,9 @@ Wlswitch::Wlswitch(std::string path, std::string newDelay)
     currentDir = path;
     delay = newDelay;
     loadConfig();
+
+    markers.push_back(Marker("avg"));
+    markers.push_back(Marker("avgInvert"));
 }
 
 Wlswitch::~Wlswitch() {}
@@ -72,11 +75,11 @@ void Wlswitch::loadConfig()
     if (!fin.is_open())
         return;
 
-    char tempString[1000];
+    char tempString[3000];
 
     while (!fin.eof()) {
 
-        fin.getline(tempString, 1000);
+        fin.getline(tempString, 3000);
         parseConfig((std::string)tempString);
     }
 }
@@ -219,11 +222,9 @@ void Wlswitch::parseConfig(std::string line)
             currentDependConfig = rightOperand;
 
         //Average color of the wallpaper marker
-        if (rightOperand == "avg")
-            replaceMarker(leftOperand, avgMarker);
-        //Invert average color of the wallpaper marker
-        if (rightOperand == "avgInvert")
-            replaceMarker(leftOperand, avgInvertMarker);
+        for (i = 0; i < markers.size(); i++)
+            if (markers[i].getSelectedString(rightOperand) != "")
+                replaceMarker(leftOperand, markers[i].getSelectedString(rightOperand));
     } else
         std::cerr << "Error while parsing config line! There is no \'=\' symbol!" << std::endl << "Line: <" << line << ">" << std::endl;
 }
@@ -428,7 +429,6 @@ void Wlswitch::calculateMarkers()
             return;
         }
         std::unordered_map<std::string, Magick::Image::ImageStatistics>::const_iterator got = statisticsContainer.find(currentWallpaper);
-
         if (got == statisticsContainer.end()){
 
             wallpaperImage->statistics(&wallpaperImageStats);
@@ -438,26 +438,21 @@ void Wlswitch::calculateMarkers()
         else
             wallpaperImageStats = got->second;
         delete wallpaperImage;
-        std::size_t r, g, b;
+        double r, g, b;
         //Adduction the (0.0; 65535.0) numbers to (0; 255) format using magic number (65535)
         //In specification sayed that it must match (0.0; 1.0) format, but on my machine is not so
-        r = (std::size_t)(wallpaperImageStats.red.mean / 65535 * 255);
-        g = (std::size_t)(wallpaperImageStats.green.mean / 65535 * 255);
-        b = (std::size_t)(wallpaperImageStats.blue.mean / 65535 * 255);
+        r = (wallpaperImageStats.red.mean / 65535 * 255);
+        g = (wallpaperImageStats.green.mean / 65535 * 255);
+        b = (wallpaperImageStats.blue.mean / 65535 * 255);
 
-        avgMarker = threeIntsToHexString(r, g, b);
-        avgInvertMarker = threeIntsToHexString(255 - r, 255 - g, 255 - b);
+        for (std::size_t i = 0; i <= markers.size(); i++){
+
+            if (markers[i].getName() == "avg")
+                markers[i].setMarker((std::size_t)r, (std::size_t)g, (std::size_t)b);
+            if (markers[i].getName() == "avgInvert")
+                markers[i].setMarker(255 - (std::size_t)r, 255 - (std::size_t)g, 255 - (std::size_t)b);
+        }
     }
-}
-
-std::string Wlswitch::threeIntsToHexString(std::size_t a, std::size_t b, std::size_t c)
-{
-    std::stringstream convertStream;
-    //Using for converting int to hex string
-    convertStream << std::setw(2) << std::setfill('0') << std::hex << a;
-    convertStream << std::setw(2) << std::setfill('0') << std::hex << b;
-    convertStream << std::setw(2) << std::setfill('0') << std::hex << c;
-    return ((std::string)"#" + convertStream.str());
 }
 
 std::string Wlswitch::deleteExtraSpaces(std::string src)
