@@ -42,7 +42,7 @@ private:
     std::string avgMarker;
     std::string avgInvertMarker;
 
-    std::string threeIntsToHexString(unsigned int a, unsigned int b, unsigned int c);
+    std::string threeIntsToHexString(std::size_t a, std::size_t b, std::size_t c);
     std::string deleteExtraSpaces(std::string src);
     std::size_t countSpacesBeforeFind(std::string src, std::string findSrc);
     void loadConfig();

@@ -45,7 +45,7 @@ void Wlswitch::loadConfig()
 {
     std::ifstream fin;
     std::string word[3];
-    int k = 0;
+    std::size_t k = 0;
 
     switcherArguments = "";
     std::string configPath = (homePath + (std::string)"/.config/wlswitch/wlswitch.conf");
@@ -152,7 +152,7 @@ void Wlswitch::parseConfig(std::string line)
 
         std::string leftOperand = line.substr(0, line.find('=', 0));
         std::string rightOperand = line.substr(line.find('=', 0) + 1, line.length() - line.find('=', 0));
-        unsigned int i = 0;
+        std::size_t i = 0;
         bool inQuoteFlag = false;
         bool parityQuotesCountFlag = true;
 
@@ -327,16 +327,15 @@ void Wlswitch::replaceMarker(std::string oldMarker, std::string newMarker)
             markersString = deleteExtraSpaces(markersString);
             //Counting spaces in string without oldMarker (spaceCount + 1 == oldMarker position in next line)
             std::size_t spacesCount =  countSpacesBeforeFind(markersString, oldMarker);
-            //Next line after ###<AUTO_CONFIG_LINE> will be modified
+            //Read next line after ###<AUTO_CONFIG_LINE> which will be modified
             fileContain += strLine + "\n";
             fio.getline(temp_strLine, 1000);
             strLine = (std::string)temp_strLine;
-
             if (newMarker != ""){
 
                 //Replacing only one pattern sequences, which have the same number as 'spaceCount + 1' to oldMarker
+                //If number not match it will be replaced with tempMarker (different for each sequence)
                 std::size_t currentMarkerPosition = 0;
-
                 while (regex_search(strLine, m, pattern)){
 
                     currentMarkerPosition++;
@@ -366,7 +365,7 @@ void Wlswitch::replaceMarker(std::string oldMarker, std::string newMarker)
                 for (std::size_t i = 0; i < tempMarkers.size(); i++)
                     strLine.replace(strLine.find(tempMarkers[i], 0), tempMarkers[i].length(), tempMarkersSaved[i]);
             }
-        }//TODO
+        }
         fileContain += strLine + (std::string)"\n";
     }
 
@@ -407,7 +406,7 @@ void Wlswitch::replaceMarker(std::string oldMarker, std::string newMarker)
                 the ${color 2E2E2E} will be replaced with color_1 marker (for e.g. avg)
                 the ${color 2A2A2A} will be replaced with color_2 marker (for e.g. avg_w)
                 the ${color 1E2E3E} will be replaced with color_3 marker (for e.g. avg_b)
-    *///TODO into doc
+    *///TODO in doc
 }
 
 void Wlswitch::calculateMarkers()
@@ -438,23 +437,20 @@ void Wlswitch::calculateMarkers()
         }
         else
             wallpaperImageStats = got->second;
-
         delete wallpaperImage;
-
-
-        unsigned int r, g, b;
+        std::size_t r, g, b;
         //Adduction the (0.0; 65535.0) numbers to (0; 255) format using magic number (65535)
         //In specification sayed that it must match (0.0; 1.0) format, but on my machine is not so
-        r = (unsigned int)(wallpaperImageStats.red.mean / 65535 * 255);
-        g = (unsigned int)(wallpaperImageStats.green.mean / 65535 * 255);
-        b = (unsigned int)(wallpaperImageStats.blue.mean / 65535 * 255);
+        r = (std::size_t)(wallpaperImageStats.red.mean / 65535 * 255);
+        g = (std::size_t)(wallpaperImageStats.green.mean / 65535 * 255);
+        b = (std::size_t)(wallpaperImageStats.blue.mean / 65535 * 255);
 
         avgMarker = threeIntsToHexString(r, g, b);
         avgInvertMarker = threeIntsToHexString(255 - r, 255 - g, 255 - b);
     }
 }
 
-std::string Wlswitch::threeIntsToHexString(unsigned int a, unsigned int b, unsigned int c)
+std::string Wlswitch::threeIntsToHexString(std::size_t a, std::size_t b, std::size_t c)
 {
     std::stringstream convertStream;
     //Using for converting int to hex string
@@ -468,9 +464,7 @@ std::string Wlswitch::deleteExtraSpaces(std::string src)
 {
     std::size_t i = 0;
     std::size_t j = 0;
-
     //Replace all tabulations by space symbols
-
     while (src.find('\t', 0) != std::string::npos)
         src[src.find('\t', 0)] =  ' ';
     //Delete all spaces before text begining
@@ -485,11 +479,9 @@ std::string Wlswitch::deleteExtraSpaces(std::string src)
             src.erase(j + 1, 1);
         i = j + 1;
     }
-
     //Deleting space at the end of string if exist
     if (src[src.length() - 1] == ' ')
         src.erase(src.length() - 1, 1);
-
     return src;
 }
 
