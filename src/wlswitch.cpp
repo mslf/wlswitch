@@ -241,7 +241,7 @@ void Wlswitch::replaceMarker(std::string oldMarker, std::string newMarker)
     std::string maskConfigString = "###<MASK_CONFIG_LINE>";
     std::string autoConfigLineOnesString = "###<AUTO_CONFIG_LINE_ONES>";
     std::string autoConfigLineString = "###<AUTO_CONFIG_LINE>";
-
+    std::cerr << "Replaced " << oldMarker << " with " << newMarker << std::endl;
     std::fstream fio;
     std::string errorMessage = "Error while depend config opening! Correct the depend config path in ~/.config/wlswitch/wlswitch.conf!\n";
 
@@ -445,12 +445,12 @@ void Wlswitch::calculateMarkers()
         g = (wallpaperImageStats.green.mean / 65535 * 255);
         b = (wallpaperImageStats.blue.mean / 65535 * 255);
 
-        for (std::size_t i = 0; i <= markers.size(); i++){
+        for (std::size_t i = 0; i < markers.size(); i++){
 
             if (markers[i].getName() == "avg")
-                markers[i].setMarker((std::size_t)r, (std::size_t)g, (std::size_t)b);
+                markers[i].setMarker(r, g, b);
             if (markers[i].getName() == "avgInvert")
-                markers[i].setMarker(255 - (std::size_t)r, 255 - (std::size_t)g, 255 - (std::size_t)b);
+                markers[i].setMarker(255 - r, 255 - g, 255 - b);
         }
     }
 }
