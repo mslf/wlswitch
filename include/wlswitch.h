@@ -33,7 +33,7 @@ private:
     std::string delay;
     std::string currentDependConfig;
     std::string currentWallpaper;
-
+    bool wallpaperChanged;
     //Error message strings
     std::string messageCreatedConfigDir;
     std::string messageCreatedCleanConfig;

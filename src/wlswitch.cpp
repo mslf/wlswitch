@@ -37,6 +37,7 @@ Wlswitch::Wlswitch(std::string path, std::string newDelay)
     configPath = (homePath + (std::string)"/.config/wlswitch/wlswitch.conf");
     currentDir = path;
     delay = newDelay;
+    wallpaperChanged = true;
 
     //Error message strings init
     messageCreatedConfigDir = "Created config directory in ";
@@ -90,10 +91,11 @@ void Wlswitch::loadConfig()
     if (!fin.is_open())
         return;
     char tempString[3000];
-    while (!fin.eof()) {
-        fin.getline(tempString, 3000);
-        parseConfig((std::string)tempString);
-    }
+    if (wallpaperChanged)
+        while (!fin.eof()) {
+            fin.getline(tempString, 3000);
+            parseConfig((std::string)tempString);
+        }
 }
 
 void Wlswitch::switchWallpaper()
@@ -119,16 +121,22 @@ void Wlswitch::switchWallpaper()
             srand (time (NULL));
             if (namesList.size() != 0) {
                 unsigned long int randNum = rand() % namesList.size();
-                resultFilename = namesList[randNum];
+                if (currentWallpaper != currentDir + namesList[randNum]){
+                    resultFilename = namesList[randNum];
+                    wallpaperChanged = true;
+                }
+                else
+                    wallpaperChanged = false;
+
             }else
                 std::cerr << errEmptyDir << std::endl;
             closedir(d);
             free(dentry);
         } else
             std::cerr << errWrongDir << std::endl;
-        if (resultFilename != ""){
+        if (resultFilename != "" && wallpaperChanged){
             currentWallpaper = currentDir + resultFilename;
-            std::string temp = switcherProgram + (std::string)" " + switcherArguments + (std::string)" " + currentWallpaper;
+            std::string temp = switcherProgram + (std::string)" " + switcherArguments + (std::string)" \"" + currentWallpaper + (std::string)"\"";
             system(temp.c_str());
 
             //Computing wallpaper's characteristics
@@ -142,7 +150,7 @@ void Wlswitch::switchWallpaper()
 void Wlswitch::updateDependConfigs()
 {
     loadConfig();
-    if (shellProgram != "" && updateScript != ""){
+    if (shellProgram != "" && updateScript != "" && wallpaperChanged){
         std::string temp = shellProgram + (std::string)" " + updateScript;
         system(temp.c_str());
     }
