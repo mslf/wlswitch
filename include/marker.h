@@ -38,7 +38,5 @@ public:
     void setMarker (double r, double g, double b);
     std::string getName();
     std::string getSelectedString(std::string src);
-
-    ~Marker();
 };
 #endif //WLSWITCH_MARKER_H

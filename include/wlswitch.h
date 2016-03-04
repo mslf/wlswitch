@@ -26,12 +26,34 @@ class Wlswitch
 {
 private:
     std::string homePath;
+    std::string configPath;
     std::string currentDir;
     std::string switcherProgram;
     std::string switcherArguments;
     std::string delay;
     std::string currentDependConfig;
     std::string currentWallpaper;
+
+    //Error message strings
+    std::string messageCreatedConfigDir;
+    std::string messageCreatedCleanConfig;
+    std::string errCreatingCleanConfig;
+    std::string errEmptyDir;
+    std::string errWrongDir;
+    std::string errDirNotSeted;
+    std::string errNoClosingQuote;
+    std::string errNoEqualSymbol;
+    std::string errOpeningDependConfig;
+    std::string warnWrongNewMask;
+    std::string errOpeningWallpaper;
+
+    //Config file tag strings
+    std::string autoBlockStartString;
+    std::string autoBlockEndString;
+    std::string maskConfigString;
+    std::string autoConfigLineOnesString;
+    std::string autoConfigLineString;
+
     //Script runs after depend configs updating by shellProgram
     std::string updateScript;
     std::string shellProgram;
@@ -52,8 +74,6 @@ public:
 
     void switchWallpaper();
     void updateDependConfigs();
-    unsigned int waitDelay();
-
-    ~Wlswitch();
+    std::size_t waitDelay();
 };
 #endif // WLSWITCH_H_INCLUDED

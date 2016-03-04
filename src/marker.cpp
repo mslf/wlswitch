@@ -16,7 +16,6 @@
 	You should have received a copy of the GNU General Public License
 	along with wlswitch. If not, see <http://www.gnu.org/licenses/>.
 */
-#include <iostream>
 #include <sstream>
 #include <iomanip>
 #include <string>
@@ -90,7 +89,6 @@ void Marker::setMarker (double r, double g, double b)
 
 std::string Marker::getSelectedString(std::string src)
 {
-    std::cerr << "Get: " << src << ". from: " << markerName << std::endl;
     if (src == markerName + (std::string)"DD")
         return markerStringDarkDark;
     if (src == markerName + (std::string)"D")
@@ -102,8 +100,4 @@ std::string Marker::getSelectedString(std::string src)
     if (src == markerName)
         return markerString;
     return (std::string)"";
-}
-Marker::~Marker()
-{
-
 }
