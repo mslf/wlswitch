@@ -1,0 +1,51 @@
+'wlswitch' config is consists of pairs like this:
+<left operand> = <right operand>
+
+All spaces and tabilations will be removed (before left operand)
+and will be replaced by single space symbol in next part of string.
+
+You can quote right operand like this:
+<left operand> = "<right operand>"
+Usually it needs for path with spaces.
+
+List of 'wlswitch' left operands for configurating it's behavior:
+path = "some path with '/' symbol at the end"
+	-- set the wallpapers directory path
+	-- (images from this folder using by 'wlswitch')
+switcher = "some switcher program"
+	-- set the program which can set the wallpaper image from command line
+	-- switcher calling looks like this:
+	<$switcher $argumentString $imageFromPath>
+argument = "some argument"
+	-- add the 'some argument' to switcher program
+	-- argumets will placed before path to image string
+delay = "some value"
+	-- set the delay after wallpaper switching in seconds
+shellProgram = "some shell program name"
+	-- set the shell program used to run update script after wallpaper switching
+	-- shell program calling looks like this:
+	<$shellProgram $updateScript>
+updateScript = "path to script"
+	-- this script will runs after wallpaper switching by shell program
+dependConfig = "path to some depend config file"
+	-- all next marker configs using for that depend config before next 'dependConfig' line is founded.
+	-- see the DependConfigDoc for more information about modifying configs.
+'marker name' = 'some reserved marker name'
+	-- match the marker name (which can found in depend config) with reserver marker name, calculating by 'wlswitch'
+
+List of reserved marker names:
+avg
+	-- mean color of all wallpaper image
+avgInvert
+	-- inverted mean color of all wallpaper image
+And theirs combinations with "DD", "D", "L", "LL" strings.
+DD
+	-- DarkDark version of reserved marker
+D
+	-- Dark version of reserved marker
+L
+	-- Light version of reserved marker
+LL
+	-- LightLight version of reserved marker
+	
+See the 'wlswitch_sample.conf'

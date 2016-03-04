@@ -1,0 +1,29 @@
+'wlswitch' can modify all config files which have a one-line comment
+like this:
+# comment line
+or this:
+' comment line too
+or another sequence of symbols before wlswitch config tag begining.
+
+List of 'wlswitch' config tags:
+###<WLSWITCH_AUTO>
+	-- begining of auto-modifying file part.
+###<WLSWITCH_AUTO>
+	-- ending of auto-modifying file part.
+###<MASK_CONFIG_LINE> 'markerName' #regular exspression for mask# #string with % symbol#
+	-- configuration the masks for each markers.
+###<AUTO_CONFIG_LINE_ONES> 'markerName'
+	-- next line will be changed. Every matches (for mask) will be replaced with ONE new mask. Using for one-colored string.
+###<AUTO_CONFIG_LINE> 'markerName1' 'markerName2' 'markerName3'
+	-- next line will be changed. Every matches (for mask) will be replaced with same new mask. Using for multi-colored string.
+
+Tags should locates in comment line like this:
+...some config file with comments line begin from // ...
+//###<WLSWITCH_AUTO>
+or this:
+...some config file with comments line begin from ' ...
+'###<WLSWITCH_AUTO>
+in configs with comments line begun from # it will be OK:
+###<WLSWITCH_AUTO>
+e.t.c
+See dependConfig_sample.conf.
