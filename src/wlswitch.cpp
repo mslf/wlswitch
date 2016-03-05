@@ -62,6 +62,7 @@ Wlswitch::Wlswitch(std::string path, std::string newDelay)
     loadConfig();
 
     markers.push_back(Marker("avg"));
+    markers.push_back(Marker("smart"));
 }
 
 void Wlswitch::loadConfig()
@@ -144,9 +145,13 @@ void Wlswitch::switchWallpaper()
 
 void Wlswitch::updateDependConfigs()
 {
+    if (shellProgram != "" && updateBeforeScript != "" && wallpaperChanged){
+        std::string temp = shellProgram + (std::string)" " + updateBeforeScript;
+        system(temp.c_str());
+    }
     loadConfig();
-    if (shellProgram != "" && updateScript != "" && wallpaperChanged){
-        std::string temp = shellProgram + (std::string)" " + updateScript;
+    if (shellProgram != "" && updateAfterScript != "" && wallpaperChanged){
+        std::string temp = shellProgram + (std::string)" " + updateAfterScript;
         system(temp.c_str());
     }
 }
@@ -213,8 +218,10 @@ void Wlswitch::parseConfig(std::string line)
         if (leftOperand == "argument")
             switcherArguments += rightOperand + (std::string)" ";
         //Update script path setting
-        if (leftOperand == "updateScript")
-            updateScript = rightOperand;
+        if (leftOperand == "updateBeforeScript")
+            updateBeforeScript = rightOperand;
+        if (leftOperand == "updateAfterScript")
+            updateAfterScript = rightOperand;
         //Shell program setting
         if (leftOperand == "shellProgram")
             shellProgram = rightOperand;
@@ -389,6 +396,13 @@ void Wlswitch::calculateMarkers()
 
         for (std::size_t i = 0; i < markers.size(); i++){
             if (markers[i].getName() == "avg")
+                markers[i].setMarker(r, g, b);
+            if (markers[i].getName() == "smart"){
+                if ((r + g + b) / 3 > (255 - r + 255 - g + 255 - b) / 3)
+                    markers[i].setMarker(255 - r, 255 - g, 255 - b);
+                else
+                    markers[i].setMarker(r, g, b);
+            }
                 markers[i].setMarker(r, g, b);
         }
     }

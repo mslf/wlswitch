@@ -25,8 +25,10 @@ shellProgram = "some shell program name"
 	-- set the shell program used to run update script after wallpaper switching
 	-- shell program calling looks like this:
 	<$shellProgram $updateScript>
-updateScript = "path to script"
-	-- this script will runs after wallpaper switching by shell program
+updateBeforeScript = "path to script"
+	-- this script will runs before wallpaper markers calculating by shell program
+updateAfterScript = "path to script"
+	-- this script will runs after wallpaper markers calculatingg by shell program
 dependConfig = "path to some depend config file"
 	-- all next marker configs using for that depend config before next 'dependConfig' line is founded.
 	-- see the DependConfigDoc for more information about modifying configs.
@@ -36,6 +38,8 @@ dependConfig = "path to some depend config file"
 List of reserved marker names:
 avg
 	-- mean color of all wallpaper image
+smart
+	-- if 'avg' > 'avgInvert' then will be 'avgInvert', else 'avg'
 And theirs combinations with "DD", "D", "L", "LL", "InvertDD", "InvertD", "Invert", "InvertL", "InvertLL" strings.
 DD
 	-- DarkDark version of reserved marker

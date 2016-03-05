@@ -55,7 +55,8 @@ private:
     std::string autoConfigLineString;
 
     //Script runs after depend configs updating by shellProgram
-    std::string updateScript;
+    std::string updateBeforeScript;
+    std::string updateAfterScript;
     std::string shellProgram;
 
     std::unordered_map<std::string, Magick::Image::ImageStatistics> statisticsContainer;
