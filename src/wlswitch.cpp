@@ -62,16 +62,12 @@ Wlswitch::Wlswitch(std::string path, std::string newDelay)
     loadConfig();
 
     markers.push_back(Marker("avg"));
-    markers.push_back(Marker("avgInvert"));
 }
 
 void Wlswitch::loadConfig()
 {
     std::ifstream fin;
-    std::string word[3];
-    std::size_t k = 0;
 
-    switcherArguments = "";
     fin.open(configPath);
     if (!fin.is_open()){
         std::string tempConfigDirPath = homePath + (std::string)"/.config/wlswitch/";
@@ -90,12 +86,12 @@ void Wlswitch::loadConfig()
     fin.open(configPath);
     if (!fin.is_open())
         return;
+    switcherArguments = "";
     char tempString[3000];
-    if (wallpaperChanged)
-        while (!fin.eof()) {
-            fin.getline(tempString, 3000);
-            parseConfig((std::string)tempString);
-        }
+    while (!fin.eof()) {
+        fin.getline(tempString, 3000);
+        parseConfig((std::string)tempString);
+    }
 }
 
 void Wlswitch::switchWallpaper()
@@ -127,7 +123,6 @@ void Wlswitch::switchWallpaper()
                 }
                 else
                     wallpaperChanged = false;
-
             }else
                 std::cerr << errEmptyDir << std::endl;
             closedir(d);
@@ -136,7 +131,7 @@ void Wlswitch::switchWallpaper()
             std::cerr << errWrongDir << std::endl;
         if (resultFilename != "" && wallpaperChanged){
             currentWallpaper = currentDir + resultFilename;
-            std::string temp = switcherProgram + (std::string)" " + switcherArguments + (std::string)" \"" + currentWallpaper + (std::string)"\"";
+            std::string temp = switcherProgram + (std::string)" " + switcherArguments + (std::string)" \"" + currentWallpaper + (std::string)"\"\n";
             system(temp.c_str());
 
             //Computing wallpaper's characteristics
@@ -227,10 +222,11 @@ void Wlswitch::parseConfig(std::string line)
         if (leftOperand == "dependConfig")
             currentDependConfig = rightOperand;
 
-        //Average color of the wallpaper marker
-        for (i = 0; i < markers.size(); i++)
-            if (markers[i].getSelectedString(rightOperand) != "")
-                replaceMarker(leftOperand, markers[i].getSelectedString(rightOperand));
+        //Reading markers
+        if (wallpaperChanged)
+            for (i = 0; i < markers.size(); i++)
+                if (markers[i].getSelectedString(rightOperand) != "")
+                    replaceMarker(leftOperand, markers[i].getSelectedString(rightOperand));
     } else
         std::cerr << errNoEqualSymbol << line << ">" << std::endl;
 }
@@ -394,8 +390,6 @@ void Wlswitch::calculateMarkers()
         for (std::size_t i = 0; i < markers.size(); i++){
             if (markers[i].getName() == "avg")
                 markers[i].setMarker(r, g, b);
-            if (markers[i].getName() == "avgInvert")
-                markers[i].setMarker(255 - r, 255 - g, 255 - b);
         }
     }
 }

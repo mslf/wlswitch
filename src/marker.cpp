@@ -58,7 +58,8 @@ void Marker::setMarker (double r, double g, double b)
     tempR = convertToColorByte(tempR);
     tempG = convertToColorByte(tempG);
     tempB = convertToColorByte(tempB);
-    markerStringLightLight = threeIntsToHexString(tempR, tempG, tempB);
+    markerLightLight = threeIntsToHexString(tempR, tempG, tempB);
+    markerInvertLight = threeIntsToHexString(255 - tempR, 255 - tempG, 255 - tempB);
 
     tempR = (std::size_t)(r * 1.5);
     tempG = (std::size_t)(g * 1.5);
@@ -66,9 +67,11 @@ void Marker::setMarker (double r, double g, double b)
     tempR = convertToColorByte(tempR);
     tempG = convertToColorByte(tempG);
     tempB = convertToColorByte(tempB);
-    markerStringLight = threeIntsToHexString(tempR, tempG, tempB);
+    markerLight = threeIntsToHexString(tempR, tempG, tempB);
+    markerInvertLight = threeIntsToHexString(255 - tempR, 255 - tempG, 255 - tempB);
 
-    markerString = threeIntsToHexString((std::size_t)r, (std::size_t)g, (std::size_t)b);
+    marker = threeIntsToHexString((std::size_t)r, (std::size_t)g, (std::size_t)b);
+    markerInvertLight = threeIntsToHexString(255 - (std::size_t)r, 255 - (std::size_t)g, 255 - (std::size_t)b);
 
     tempR = (std::size_t)(r * 0.7);
     tempG = (std::size_t)(g * 0.7);
@@ -76,7 +79,8 @@ void Marker::setMarker (double r, double g, double b)
     tempR = convertToColorByte(tempR);
     tempG = convertToColorByte(tempG);
     tempB = convertToColorByte(tempB);
-    markerStringDark = threeIntsToHexString(tempR, tempG, tempB);
+    markerDark = threeIntsToHexString(tempR, tempG, tempB);
+    markerInvertDark = threeIntsToHexString(255 - tempR, 255 - tempG, 255 - tempB);
 
     tempR = (std::size_t)(r * 0.4);
     tempG = (std::size_t)(g * 0.4);
@@ -84,20 +88,31 @@ void Marker::setMarker (double r, double g, double b)
     tempR = convertToColorByte(tempR);
     tempG = convertToColorByte(tempG);
     tempB = convertToColorByte(tempB);
-    markerStringDarkDark = threeIntsToHexString(tempR, tempG, tempB);
+    markerDarkDark = threeIntsToHexString(tempR, tempG, tempB);
+    markerInvertDarkDark = threeIntsToHexString(255 - tempR, 255 - tempG, 255 - tempB);
 }
 
 std::string Marker::getSelectedString(std::string src)
 {
     if (src == markerName + (std::string)"DD")
-        return markerStringDarkDark;
+        return markerDarkDark;
     if (src == markerName + (std::string)"D")
-        return markerStringDark;
+        return markerDark;
     if (src == markerName + (std::string)"LL")
-        return markerStringLightLight;
+        return markerLightLight;
     if (src == markerName + (std::string)"L")
-        return markerStringLight;
+        return markerLight;
     if (src == markerName)
-        return markerString;
+        return marker;
+    if (src == markerName + (std::string)"InvertDD")
+        return markerInvertDarkDark;
+    if (src == markerName + (std::string)"InvertD")
+        return markerInvertDark;
+    if (src == markerName + (std::string)"InvertLL")
+        return markerInvertLightLight;
+    if (src == markerName + (std::string)"InvertL")
+        return markerInvertLight;
+    if (src == markerName + (std::string)"Invert")
+        return markerInvert;
     return (std::string)"";
 }

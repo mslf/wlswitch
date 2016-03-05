@@ -23,12 +23,18 @@
 class Marker
 {
 private:
-    std::string markerStringLightLight;
-    std::string markerStringLight;
-    std::string markerString;
-    std::string markerStringDark;
-    std::string markerStringDarkDark;
     std::string markerName;
+    std::string markerLightLight;
+    std::string markerLight;
+    std::string marker;
+    std::string markerDark;
+    std::string markerDarkDark;
+
+    std::string markerInvert;
+    std::string markerInvertLightLight;
+    std::string markerInvertLight;
+    std::string markerInvertDark;
+    std::string markerInvertDarkDark;
 
     std::size_t convertToColorByte(std::size_t a);
     std::string threeIntsToHexString(std::size_t r, std::size_t g, std::size_t b);

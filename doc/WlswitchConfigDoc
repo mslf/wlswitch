@@ -36,9 +36,7 @@ dependConfig = "path to some depend config file"
 List of reserved marker names:
 avg
 	-- mean color of all wallpaper image
-avgInvert
-	-- inverted mean color of all wallpaper image
-And theirs combinations with "DD", "D", "L", "LL" strings.
+And theirs combinations with "DD", "D", "L", "LL", "InvertDD", "InvertD", "Invert", "InvertL", "InvertLL" strings.
 DD
 	-- DarkDark version of reserved marker
 D
@@ -47,5 +45,15 @@ L
 	-- Light version of reserved marker
 LL
 	-- LightLight version of reserved marker
+Invert
+	-- Inverted version of reserved marker
+InvertDD
+	-- Inverted version of DarkDark reserved marker
+InvertD
+	-- Inverted version of Dark reserved marker
+InvertL
+	-- Inverted version of Light reserved marker
+InvertLL
+	-- Inverted version of LightLight reserved marker
 	
 See the 'wlswitch_sample.conf'
