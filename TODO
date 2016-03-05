@@ -1,5 +1,4 @@
 +Depend configs changing
-    - add markers
     - image format adding
 +Add recursive directory reading
 +Fix memory leaks with JPEGs

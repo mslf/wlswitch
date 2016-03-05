@@ -71,7 +71,7 @@ void Marker::setMarker (double r, double g, double b)
     markerInvertLight = threeIntsToHexString(255 - tempR, 255 - tempG, 255 - tempB);
 
     marker = threeIntsToHexString((std::size_t)r, (std::size_t)g, (std::size_t)b);
-    markerInvertLight = threeIntsToHexString(255 - (std::size_t)r, 255 - (std::size_t)g, 255 - (std::size_t)b);
+    markerInvert = threeIntsToHexString(255 - (std::size_t)r, 255 - (std::size_t)g, 255 - (std::size_t)b);
 
     tempR = (std::size_t)(r * 0.7);
     tempG = (std::size_t)(g * 0.7);

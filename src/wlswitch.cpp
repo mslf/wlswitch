@@ -30,6 +30,7 @@
 #include <vector>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <wlswitch.h>
 
 Wlswitch::Wlswitch(std::string path, std::string newDelay)
 {
@@ -63,6 +64,11 @@ Wlswitch::Wlswitch(std::string path, std::string newDelay)
 
     markers.push_back(Marker("avg"));
     markers.push_back(Marker("smart"));
+    markers.push_back(Marker("leftSide"));
+    markers.push_back(Marker("rightSide"));
+    markers.push_back(Marker("upSide"));
+    markers.push_back(Marker("downSide"));
+    markers.push_back(Marker("center"));
 }
 
 void Wlswitch::loadConfig()
@@ -367,32 +373,63 @@ void Wlswitch::calculateMarkers()
         Calculating some characteristics of the wallpaper picture for e.g. average color (avg) e.t.c
     */
     if (currentWallpaper != ""){
-        Magick::Image* wallpaperImage = new Magick::Image;
-        Magick::Image::ImageStatistics wallpaperImageStats;
+        Magick::Image wallpaperImage;
+        Magick::Image cropImage;
+        ImagePartsStatistics wallpaperImageStats;
         try
         {
-            wallpaperImage->read(currentWallpaper);
+            wallpaperImage.read(currentWallpaper);
         }
         catch(Magick::Exception &error_ )
         {
             std::cerr << errOpeningWallpaper << std::endl;
             return;
         }
-        std::unordered_map<std::string, Magick::Image::ImageStatistics>::const_iterator got = statisticsContainer.find(currentWallpaper);
+        std::unordered_map<std::string, ImagePartsStatistics>::const_iterator got = statisticsContainer.find(currentWallpaper);
         if (got == statisticsContainer.end()){
-            wallpaperImage->statistics(&wallpaperImageStats);
-            std::pair<std::string, Magick::Image::ImageStatistics> pairToAdd (currentWallpaper, wallpaperImageStats);
+            wallpaperImage.statistics(&wallpaperImageStats.all);
+            //Calculating upSide image statistics
+            cropImage = wallpaperImage;
+            cropImage.scale("800x450");
+            cropImage.crop(Magick::Geometry(800, 100, 0, 0));
+            cropImage.statistics(&wallpaperImageStats.upSide);
+
+            //Calculating downSide image statistics
+            cropImage = wallpaperImage;
+            cropImage.scale("800x450");
+            cropImage.crop(Magick::Geometry(800, 100, 0, 350));
+            cropImage.statistics(&wallpaperImageStats.downSide);
+
+            //Calculating leftSide image statistics
+            cropImage = wallpaperImage;
+            cropImage.scale("800x450");
+            cropImage.crop(Magick::Geometry(400, 450, 0, 0));
+            cropImage.statistics(&wallpaperImageStats.leftSide);
+
+            //Calculating rightSide image statistics
+            cropImage = wallpaperImage;
+            cropImage.scale("800x450");
+            cropImage.crop(Magick::Geometry(400, 450, 400, 0));
+            cropImage.statistics(&wallpaperImageStats.rightSide);
+
+            //Calculating center image statistics
+            cropImage = wallpaperImage;
+            cropImage.scale("800x450");
+            cropImage.crop(Magick::Geometry(300, 150, 250, 150));
+            cropImage.statistics(&wallpaperImageStats.center);
+
+            std::pair<std::string, ImagePartsStatistics> pairToAdd (currentWallpaper, wallpaperImageStats);
             statisticsContainer.insert(pairToAdd);
         }
         else
             wallpaperImageStats = got->second;
-        delete wallpaperImage;
         double r, g, b;
         //Adduction the (0.0; 65535.0) numbers to (0; 255) format using magic number (65535)
         //In specification sayed that it must match (0.0; 1.0) format, but on my machine is not so
-        r = (wallpaperImageStats.red.mean / 65535 * 255);
-        g = (wallpaperImageStats.green.mean / 65535 * 255);
-        b = (wallpaperImageStats.blue.mean / 65535 * 255);
+        //Markers for 'all' zone
+        r = (wallpaperImageStats.all.red.mean / 65535 * 255);
+        g = (wallpaperImageStats.all.green.mean / 65535 * 255);
+        b = (wallpaperImageStats.all.blue.mean / 65535 * 255);
 
         for (std::size_t i = 0; i < markers.size(); i++){
             if (markers[i].getName() == "avg")
@@ -403,8 +440,48 @@ void Wlswitch::calculateMarkers()
                 else
                     markers[i].setMarker(r, g, b);
             }
-                markers[i].setMarker(r, g, b);
         }
+        //Markers for 'center' zone
+        r = (wallpaperImageStats.center.red.mean / 65535 * 255);
+        g = (wallpaperImageStats.center.green.mean / 65535 * 255);
+        b = (wallpaperImageStats.center.blue.mean / 65535 * 255);
+
+        for (std::size_t i = 0; i < markers.size(); i++)
+            if (markers[i].getName() == "center")
+                markers[i].setMarker(r, g, b);
+        //Markers for 'leftSide' zone
+        r = (wallpaperImageStats.leftSide.red.mean / 65535 * 255);
+        g = (wallpaperImageStats.leftSide.green.mean / 65535 * 255);
+        b = (wallpaperImageStats.leftSide.blue.mean / 65535 * 255);
+
+        for (std::size_t i = 0; i < markers.size(); i++)
+            if (markers[i].getName() == "leftSide")
+                markers[i].setMarker(r, g, b);
+        //Markers for 'rightSide' zone
+        r = (wallpaperImageStats.rightSide.red.mean / 65535 * 255);
+        g = (wallpaperImageStats.rightSide.green.mean / 65535 * 255);
+        b = (wallpaperImageStats.rightSide.blue.mean / 65535 * 255);
+
+        for (std::size_t i = 0; i < markers.size(); i++)
+            if (markers[i].getName() == "rightSide")
+                markers[i].setMarker(r, g, b);
+        //Markers for 'upSide' zone
+        r = (wallpaperImageStats.upSide.red.mean / 65535 * 255);
+        g = (wallpaperImageStats.upSide.green.mean / 65535 * 255);
+        b = (wallpaperImageStats.upSide.blue.mean / 65535 * 255);
+
+        for (std::size_t i = 0; i < markers.size(); i++)
+            if (markers[i].getName() == "upSide")
+                markers[i].setMarker(r, g, b);
+        //Markers for 'downSide' zone
+        r = (wallpaperImageStats.downSide.red.mean / 65535 * 255);
+        g = (wallpaperImageStats.downSide.green.mean / 65535 * 255);
+        b = (wallpaperImageStats.downSide.blue.mean / 65535 * 255);
+
+        for (std::size_t i = 0; i < markers.size(); i++)
+            if (markers[i].getName() == "downSide")
+                markers[i].setMarker(r, g, b);
+
     }
 }
 

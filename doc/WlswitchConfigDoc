@@ -40,6 +40,16 @@ avg
 	-- mean color of all wallpaper image
 smart
 	-- if 'avg' > 'avgInvert' then will be 'avgInvert', else 'avg'
+center
+    -- mean color of wallpaper image's center
+leftSide
+    -- mean color of wallpaper image's left side
+rightSide
+    -- mean color of wallpaper image's right side
+upSide
+    -- mean color of wallpaper image's up side
+downSide
+    -- mean color of wallpaper image's down side
 And theirs combinations with "DD", "D", "L", "LL", "InvertDD", "InvertD", "Invert", "InvertL", "InvertLL" strings.
 DD
 	-- DarkDark version of reserved marker

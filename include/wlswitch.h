@@ -22,6 +22,16 @@
 #include <unordered_map>
 #include <Magick++.h>
 #include "marker.h"
+typedef struct
+{
+    Magick::Image::ImageStatistics all;
+    Magick::Image::ImageStatistics leftSide;
+    Magick::Image::ImageStatistics center;
+    Magick::Image::ImageStatistics rightSide;
+    Magick::Image::ImageStatistics upSide;
+    Magick::Image::ImageStatistics downSide;
+}ImagePartsStatistics;
+
 class Wlswitch
 {
 private:
@@ -59,7 +69,7 @@ private:
     std::string updateAfterScript;
     std::string shellProgram;
 
-    std::unordered_map<std::string, Magick::Image::ImageStatistics> statisticsContainer;
+    std::unordered_map<std::string, ImagePartsStatistics> statisticsContainer;
     std::string meanRColor, meanGColor, meanBColor, meanWColor;
     std::string meanRColorInvert, meanGColorInvert, meanBColorInvert, meanWColorInvert;
     std::vector<Marker> markers;
