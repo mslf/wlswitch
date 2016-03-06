@@ -38,7 +38,7 @@ Wlswitch::Wlswitch(std::string path, std::string newDelay)
     configPath = (homePath + (std::string)"/.config/wlswitch/wlswitch.conf");
     currentDir = path;
     delay = newDelay;
-    wallpaperChanged = true;
+    wallpaperChanged = false;
 
     //Error message strings init
     messageCreatedConfigDir = "Created config directory in ";
@@ -94,6 +94,7 @@ void Wlswitch::loadConfig()
     if (!fin.is_open())
         return;
     switcherArguments = "";
+    imageFormats.clear();
     char tempString[3000];
     while (!fin.eof()) {
         fin.getline(tempString, 3000);
@@ -117,9 +118,11 @@ void Wlswitch::switchWallpaper()
         if ((d = opendir(currentDir.c_str())) != NULL){
             while ((dentry = readdir(d)) != NULL){
                 tempFilename = (std::string)dentry->d_name;
-                if (tempFilename.find(".jpg", 0) != std::string::npos || tempFilename.find(".png", 0) != std::string::npos){
-                    namesList.push_back(tempFilename);
-                }
+                for (std::size_t i = 0; i < imageFormats.size(); i++)
+                    if(tempFilename.find((std::string)"." + imageFormats[i], 0) == tempFilename.length() - imageFormats[i].length() - 1){
+                        namesList.push_back(tempFilename);
+                        break;
+                    }
             }
             srand (time (NULL));
             if (namesList.size() != 0) {
@@ -223,6 +226,13 @@ void Wlswitch::parseConfig(std::string line)
         //Switcher program argument setting
         if (leftOperand == "argument")
             switcherArguments += rightOperand + (std::string)" ";
+        //Image formats setting
+        if (leftOperand == "format"){
+            for (i = 0; i <imageFormats.size(); i++)
+                if (imageFormats[i] == rightOperand)
+                    return;
+            imageFormats.push_back(rightOperand);
+        }
         //Update script path setting
         if (leftOperand == "updateBeforeScript")
             updateBeforeScript = rightOperand;

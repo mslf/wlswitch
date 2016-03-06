@@ -19,6 +19,8 @@ switcher = "some switcher program"
 argument = "some argument"
 	-- add the 'some argument' to switcher program
 	-- argumets will placed before path to image string
+format = "some format name"
+    -- add the 'some format name' to array of image formatsfor opening by  'wlswitch'
 delay = "some value"
 	-- set the delay after wallpaper switching in seconds
 shellProgram = "some shell program name"

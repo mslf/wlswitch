@@ -43,6 +43,7 @@ private:
     std::string delay;
     std::string currentDependConfig;
     std::string currentWallpaper;
+    std::vector<std::string> imageFormats;
     bool wallpaperChanged;
     //Error message strings
     std::string messageCreatedConfigDir;
