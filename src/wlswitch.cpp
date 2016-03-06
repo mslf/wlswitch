@@ -388,34 +388,31 @@ void Wlswitch::calculateMarkers()
         std::unordered_map<std::string, ImagePartsStatistics>::const_iterator got = statisticsContainer.find(currentWallpaper);
         if (got == statisticsContainer.end()){
             wallpaperImage.statistics(&wallpaperImageStats.all);
+            size_t imageHeight = wallpaperImage.size().height();
+            size_t imageWidth = wallpaperImage.size().width();
             //Calculating upSide image statistics
             cropImage = wallpaperImage;
-            cropImage.scale("800x450");
-            cropImage.crop(Magick::Geometry(800, 100, 0, 0));
+            cropImage.crop(Magick::Geometry(imageWidth, imageHeight / 10, 0, 0));
             cropImage.statistics(&wallpaperImageStats.upSide);
 
             //Calculating downSide image statistics
             cropImage = wallpaperImage;
-            cropImage.scale("800x450");
-            cropImage.crop(Magick::Geometry(800, 100, 0, 350));
+            cropImage.crop(Magick::Geometry(imageWidth, imageHeight / 10, 0, imageHeight - imageHeight / 10));
             cropImage.statistics(&wallpaperImageStats.downSide);
 
             //Calculating leftSide image statistics
             cropImage = wallpaperImage;
-            cropImage.scale("800x450");
-            cropImage.crop(Magick::Geometry(400, 450, 0, 0));
+            cropImage.crop(Magick::Geometry(imageWidth / 2, imageHeight, 0, 0));
             cropImage.statistics(&wallpaperImageStats.leftSide);
 
             //Calculating rightSide image statistics
             cropImage = wallpaperImage;
-            cropImage.scale("800x450");
-            cropImage.crop(Magick::Geometry(400, 450, 400, 0));
+            cropImage.crop(Magick::Geometry(imageWidth / 2, imageHeight, imageWidth - imageWidth / 2 , 0));
             cropImage.statistics(&wallpaperImageStats.rightSide);
 
             //Calculating center image statistics
             cropImage = wallpaperImage;
-            cropImage.scale("800x450");
-            cropImage.crop(Magick::Geometry(300, 150, 250, 150));
+            cropImage.crop(Magick::Geometry(imageWidth / 3, imageHeight / 3, (imageWidth - imageWidth / 3) / 2, (imageHeight - imageHeight / 3) / 2));
             cropImage.statistics(&wallpaperImageStats.center);
 
             std::pair<std::string, ImagePartsStatistics> pairToAdd (currentWallpaper, wallpaperImageStats);
