@@ -39,6 +39,7 @@ Wlswitch::Wlswitch(std::string path, std::string newDelay)
     currentDir = path;
     delay = newDelay;
     wallpaperChanged = false;
+    usingSubDirs = false;
 
     //Error message strings init
     messageCreatedConfigDir = "Created config directory in ";
@@ -107,23 +108,12 @@ void Wlswitch::switchWallpaper()
     if (currentDir != "" && switcherProgram != ""){
         std::vector<std::string> namesList;
         std::string resultFilename;
-        DIR *d = NULL;
-        struct dirent* dentry = NULL;
-        std::string tempFilename;
         /*
             In current directory we get the list of images (jpg, png) and puts it to
             namesList string and count them.
             Then we random number between 0 and count of files and set the resultFilename to namesList[randNum]
         */
-        if ((d = opendir(currentDir.c_str())) != NULL){
-            while ((dentry = readdir(d)) != NULL){
-                tempFilename = (std::string)dentry->d_name;
-                for (std::size_t i = 0; i < imageFormats.size(); i++)
-                    if(tempFilename.find((std::string)"." + imageFormats[i], 0) == tempFilename.length() - imageFormats[i].length() - 1){
-                        namesList.push_back(tempFilename);
-                        break;
-                    }
-            }
+            namesList = readImagesFromDir(currentDir);
             srand (time (NULL));
             if (namesList.size() != 0) {
                 unsigned long int randNum = rand() % namesList.size();
@@ -135,10 +125,6 @@ void Wlswitch::switchWallpaper()
                     wallpaperChanged = false;
             }else
                 std::cerr << errEmptyDir << std::endl;
-            closedir(d);
-            free(dentry);
-        } else
-            std::cerr << errWrongDir << std::endl;
         if (resultFilename != "" && wallpaperChanged){
             currentWallpaper = currentDir + resultFilename;
             std::string temp = switcherProgram + (std::string)" " + switcherArguments + (std::string)" \"" + currentWallpaper + (std::string)"\"\n";
@@ -226,6 +212,13 @@ void Wlswitch::parseConfig(std::string line)
         //Switcher program argument setting
         if (leftOperand == "argument")
             switcherArguments += rightOperand + (std::string)" ";
+        //usingRecursiveDirs flag setting
+        if(leftOperand == "usingSubDirs"){
+            if (rightOperand == "1" || rightOperand == "true" || rightOperand == "yes")
+                usingSubDirs = true;
+            else
+                usingSubDirs = false;
+        }
         //Image formats setting
         if (leftOperand == "format"){
             for (i = 0; i <imageFormats.size(); i++)
@@ -526,4 +519,49 @@ std::size_t Wlswitch::countSpacesBeforeFind(std::string src, std::string findSrc
         i = src.find(' ', i) + 1;
     }
     return spacesCount;
+}
+
+std::vector<std::string> Wlswitch::readImagesFromDir(std::string path)
+{
+    std::vector<std::string> namesList;
+    if (path != ""){
+        DIR *d = NULL;
+        DIR *tempD = NULL;
+        struct dirent* dentry = NULL;
+        std::vector<std::string> tempNamesList;
+        std::string tempFilename;
+        std::string tempDirName;
+        /*
+            In current directory we get the list of images (jpg, png) and puts it to
+            namesList string and count them.
+            Then we random number between 0 and count of files and set the resultFilename to namesList[randNum]
+        */
+        if ((d = opendir(path.c_str())) != NULL){
+            while ((dentry = readdir(d)) != NULL){
+                tempFilename = (std::string)dentry->d_name;
+                if (tempFilename != "." && tempFilename != ".."){
+                    if (usingSubDirs){
+                        tempDirName = path + tempFilename + (std::string)"/";
+                        if ((tempD = opendir(tempDirName.c_str())) != NULL){
+                            closedir(tempD);
+                            tempNamesList = readImagesFromDir(tempDirName);
+                            for (std::size_t i = 0; i < tempNamesList.size(); i++)
+                                namesList.push_back(tempFilename + (std::string)"/" + tempNamesList[i]);
+                            tempNamesList.clear();
+                        }
+                    }
+                    for (std::size_t i = 0; i < imageFormats.size(); i++)
+                        if (tempFilename.find((std::string)"." + imageFormats[i], 0) != std::string::npos)
+                            if(tempFilename.find((std::string)"." + imageFormats[i], 0) == tempFilename.length() - imageFormats[i].length() - 1){
+                                namesList.push_back(tempFilename);
+                                break;
+                            }
+                }
+            }
+            closedir(d);
+            free(dentry);
+        } else
+            std::cerr << errWrongDir << path << std::endl;
+    }
+    return namesList;
 }

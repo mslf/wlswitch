@@ -21,6 +21,8 @@ argument = "some argument"
 	-- argumets will placed before path to image string
 format = "some format name"
     -- add the 'some format name' to array of image formatsfor opening by  'wlswitch'
+usingSubDirs = "yes" || "true" || "1"
+    -- allow 'wlswitch' using subdirs for images scanning
 delay = "some value"
 	-- set the delay after wallpaper switching in seconds
 shellProgram = "some shell program name"

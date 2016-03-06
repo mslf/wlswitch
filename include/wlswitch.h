@@ -44,6 +44,7 @@ private:
     std::string currentDependConfig;
     std::string currentWallpaper;
     std::vector<std::string> imageFormats;
+    bool usingSubDirs;
     bool wallpaperChanged;
     //Error message strings
     std::string messageCreatedConfigDir;
@@ -77,6 +78,7 @@ private:
 
     std::string deleteExtraSpaces(std::string src);
     std::size_t countSpacesBeforeFind(std::string src, std::string findSrc);
+    std::vector<std::string> readImagesFromDir(std::string path);
     void loadConfig();
     void parseConfig(std::string line);
     void replaceMarker(std::string oldMarker, std::string newMarker);
