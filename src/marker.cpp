@@ -31,6 +31,7 @@ std::string Marker::getName()
 {
     return markerName;
 }
+
 std::string Marker::threeIntsToHexString(std::size_t r, std::size_t g, std::size_t b)
 {
     //Using for converting int to hex string
@@ -59,7 +60,9 @@ void Marker::setMarker (double r, double g, double b)
     tempG = convertToColorByte(tempG);
     tempB = convertToColorByte(tempB);
     markerLightLight = threeIntsToHexString(tempR, tempG, tempB);
-    markerInvertLight = threeIntsToHexString(255 - tempR, 255 - tempG, 255 - tempB);
+    markerInvertLight = threeIntsToHexString(255 - tempR,
+    					     255 - tempG,
+    					     255 - tempB);
 
     tempR = (std::size_t)(r * 1.5);
     tempG = (std::size_t)(g * 1.5);

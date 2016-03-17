@@ -34,8 +34,8 @@
 
 Wlswitch::Wlswitch(std::string path, std::string newDelay)
 {
-    homePath = (std::string)getenv("HOME");
-    configPath = (homePath + (std::string)"/.config/wlswitch/wlswitch.conf");
+    homePath = std::string(getenv("HOME"));
+    configPath = (homePath + std::string("/.config/wlswitch/wlswitch.conf"));
     currentDir = path;
     delay = newDelay;
     wallpaperChanged = false;
@@ -43,23 +43,27 @@ Wlswitch::Wlswitch(std::string path, std::string newDelay)
 
     //Error message strings init
     messageCreatedConfigDir = "Created config directory in ";
-    messageCreatedCleanConfig = (std::string)"Created clean config " + configPath;
-    errCreatingCleanConfig = (std::string)"Error while creating clean config! " + configPath;
+    messageCreatedCleanConfig = std::string("Created clean config ") + configPath;
+    errCreatingCleanConfig = std::string("Error while creating clean config! ") + configPath;
     errEmptyDir = "Current wallpaper directory has no images!";
-    errWrongDir = (std::string)"Error while wallpapers directory opening! Correct this path in config file!\nWrong path: " + currentDir;
-    errDirNotSeted = (std::string)"Error while wallpaper switching! Path or switcher program is not set in the config file!";
-    errNoClosingQuote = (std::string)"Error while parsing config line! There is no closing quote!\nLine: <";
-    errNoEqualSymbol = (std::string)"Error while parsing config line! There is no \'=\' symbol!\nLine: <";
-    errOpeningDependConfig = (std::string)"Error while depend config opening! Correct the depend config path in ~/.config/wlswitch/wlswitch.conf!\n Depend config: ";
+    errWrongDir = std::string("Error while wallpapers directory opening!"
+                                      " Correct this path in config file!\nWrong path: ") + currentDir;
+    errDirNotSeted = std::string("Error while wallpaper switching! "
+                                         "Path or switcher program is not set in the config file!");
+    errNoClosingQuote = std::string("Error while parsing config line! There is no closing quote!\nLine: <");
+    errNoEqualSymbol = std::string("Error while parsing config line! There is no \'=\' symbol!\nLine: <");
+    errOpeningDependConfig = std::string("Error while depend config opening! "
+                                                 "Correct the depend config path in ~/.config/wlswitch/wlswitch.conf!\n "
+                                                 "Depend config: ");
     warnWrongNewMask = "Warning! New mask has no % symbol. Is this error?\nLine: ";
     errOpeningWallpaper = "Error while opening wallpaper file! Please check your config file!";
 
     //Config file tag strings init
-    autoBlockStartString = (std::string)"###<WLSWITCH_AUTO>";
-    autoBlockEndString = (std::string)"###</WLSWITCH_AUTO>";
-    maskConfigString = (std::string)"###<MASK_CONFIG_LINE>";
-    autoConfigLineOnesString = (std::string)"###<AUTO_CONFIG_LINE_ONES>";
-    autoConfigLineString = (std::string)"###<AUTO_CONFIG_LINE>";
+    autoBlockStartString = std::string("###<WLSWITCH_AUTO>");
+    autoBlockEndString = std::string("###</WLSWITCH_AUTO>");
+    maskConfigString = std::string("###<MASK_CONFIG_LINE>");
+    autoConfigLineOnesString = std::string("###<AUTO_CONFIG_LINE_ONES>");
+    autoConfigLineString = std::string("###<AUTO_CONFIG_LINE>");
 
     loadConfig();
 
@@ -74,15 +78,13 @@ Wlswitch::Wlswitch(std::string path, std::string newDelay)
 
 void Wlswitch::loadConfig()
 {
-    std::ifstream fin;
+    std::ifstream fin(configPath);
 
-    fin.open(configPath);
     if (!fin.is_open()){
-        std::string tempConfigDirPath = homePath + (std::string)"/.config/wlswitch/";
+        std::string tempConfigDirPath = homePath + std::string("/.config/wlswitch/");
         if (mkdir(tempConfigDirPath.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == 0)
             std::cerr << messageCreatedConfigDir << homePath << "/.config/" << std::endl;
-        std::ofstream fout;
-        fout.open(configPath);
+        std::ofstream fout(configPath);
        if (fout.is_open()){
            std::cerr << messageCreatedCleanConfig << std::endl;
             fout.close();
@@ -96,16 +98,16 @@ void Wlswitch::loadConfig()
         return;
     switcherArguments = "";
     imageFormats.clear();
-    char tempString[3000];
+    char tempString[MAX_LINE_LENGTH];
     while (!fin.eof()) {
-        fin.getline(tempString, 3000);
+        fin.getline(tempString, MAX_LINE_LENGTH);
         parseConfig((std::string)tempString);
     }
 }
 
 void Wlswitch::switchWallpaper()
 {
-    if (currentDir != "" && switcherProgram != ""){
+    if (!currentDir.empty() && !switcherProgram.empty()){
         std::vector<std::string> namesList;
         std::string resultFilename;
         /*
@@ -125,9 +127,11 @@ void Wlswitch::switchWallpaper()
                     wallpaperChanged = false;
             }else
                 std::cerr << errEmptyDir << std::endl;
-        if (resultFilename != "" && wallpaperChanged){
+        if (!resultFilename.empty() && wallpaperChanged){
             currentWallpaper = currentDir + resultFilename;
-            std::string temp = switcherProgram + (std::string)" " + switcherArguments + (std::string)" \"" + currentWallpaper + (std::string)"\"\n";
+            std::string temp = switcherProgram + std::string(" ") +
+                    switcherArguments + std::string(" \"") +
+                    currentWallpaper + std::string("\"\n");
             system(temp.c_str());
 
             //Computing wallpaper's characteristics
@@ -140,13 +144,13 @@ void Wlswitch::switchWallpaper()
 
 void Wlswitch::updateDependConfigs()
 {
-    if (shellProgram != "" && updateBeforeScript != "" && wallpaperChanged){
-        std::string temp = shellProgram + (std::string)" " + updateBeforeScript;
+    if (!shellProgram.empty() && !updateBeforeScript.empty() && wallpaperChanged){
+        std::string temp = shellProgram + std::string(" ") + updateBeforeScript;
         system(temp.c_str());
     }
     loadConfig();
-    if (shellProgram != "" && updateAfterScript != "" && wallpaperChanged){
-        std::string temp = shellProgram + (std::string)" " + updateAfterScript;
+    if (!shellProgram.empty() && !updateAfterScript.empty() && wallpaperChanged){
+        std::string temp = shellProgram + std::string(" ") + updateAfterScript;
         system(temp.c_str());
     }
 }
@@ -166,8 +170,8 @@ void Wlswitch::parseConfig(std::string line)
         bool inQuoteFlag = false;
         bool parityQuotesCountFlag = true;
         //Checking quotes count
-        for (i = 0; i <rightOperand.length(); i++)
-            if(rightOperand[i] == '"')
+        for (i = 0; i < rightOperand.length(); i++)
+            if('\"' == rightOperand[i])
                 parityQuotesCountFlag = !parityQuotesCountFlag;
         i = 0;
         if (!parityQuotesCountFlag){
@@ -185,7 +189,7 @@ void Wlswitch::parseConfig(std::string line)
         //Deleting spaces and tabulations from non-quoted rightOperand string parts
         i = 0;
         while (i <= rightOperand.length()){
-            if(rightOperand[i] == '\"')
+            if(rightOperand[i] == '"')
                 inQuoteFlag = !inQuoteFlag;
             if (!inQuoteFlag && (rightOperand[i] == ' ' || rightOperand[i] == '\t'))
                 rightOperand.erase(i, 1);
@@ -211,7 +215,7 @@ void Wlswitch::parseConfig(std::string line)
             delay = rightOperand;
         //Switcher program argument setting
         if (leftOperand == "argument")
-            switcherArguments += rightOperand + (std::string)" ";
+            switcherArguments += rightOperand + std::string(" ");
         //usingRecursiveDirs flag setting
         if(leftOperand == "usingSubDirs"){
             if (rightOperand == "1" || rightOperand == "true" || rightOperand == "yes")
@@ -221,7 +225,7 @@ void Wlswitch::parseConfig(std::string line)
         }
         //Image formats setting
         if (leftOperand == "format"){
-            for (i = 0; i <imageFormats.size(); i++)
+            for (i = 0; i < imageFormats.size(); i++)
                 if (imageFormats[i] == rightOperand)
                     return;
             imageFormats.push_back(rightOperand);
@@ -241,7 +245,7 @@ void Wlswitch::parseConfig(std::string line)
         //Reading markers
         if (wallpaperChanged)
             for (i = 0; i < markers.size(); i++)
-                if (markers[i].getSelectedString(rightOperand) != "")
+                if (!markers[i].getSelectedString(rightOperand).empty())
                     replaceMarker(leftOperand, markers[i].getSelectedString(rightOperand));
     } else
         std::cerr << errNoEqualSymbol << line << ">" << std::endl;
@@ -249,14 +253,14 @@ void Wlswitch::parseConfig(std::string line)
 
 std::size_t Wlswitch::waitDelay()
 {
-    return sleep (stoi (delay));
+    return sleep(stoi(delay));
 }
 
 void Wlswitch::replaceMarker(std::string oldMarker, std::string newMarker)
 {
     std::fstream fio;
-    //Yes,in  lines bigger than 3000 chars only 3000 will be processed
-    char temp_strLine[3000];
+    //Yes,in  lines bigger than MAX_LINE_LENGTH chars only MAX_LINE_LENGTH will be processed
+    char temp_strLine[MAX_LINE_LENGTH];
     std::string strLine;
     std::string fileContain;
     std::string oldMask;
@@ -268,7 +272,7 @@ void Wlswitch::replaceMarker(std::string oldMarker, std::string newMarker)
     if (!fio.is_open())
         std::cerr << errOpeningDependConfig << currentDependConfig << std::endl;
     while (!fio.eof()){
-        fio.getline(temp_strLine, 3000);
+        fio.getline(temp_strLine, MAX_LINE_LENGTH);
         strLine = (std::string)temp_strLine;
         //Auto block start and end
         if (strLine.find(autoBlockStartString, 0) != std::string::npos)
@@ -284,10 +288,11 @@ void Wlswitch::replaceMarker(std::string oldMarker, std::string newMarker)
                 oldMask = strLine.substr(position + 1, strLine.find("#", position + 1) - position - 1);
                 position = strLine.find("#", strLine.find("#", position + 1) + 1);
                 newMask = strLine.substr(position + 1, strLine.find("#", position + 1) - position - 1);
-                if (newMask.find("%", 0) == std::string::npos)
+                if (newMask.find("%", 0) == std::string::npos) {
                     std::cerr << warnWrongNewMask << strLine << std::endl;
-                else
+                } else {
                     newMask.replace(newMask.find("%", 0), 1, newMarker);
+                }
                 maskConfigured = true;
             }
         }
@@ -299,7 +304,7 @@ void Wlswitch::replaceMarker(std::string oldMarker, std::string newMarker)
                 std::smatch m;
                 //Next line after ###<AUTO_CONFIG_LINE_ONES> will be modified
                 fileContain += strLine + (std::string)"\n";
-                fio.getline(temp_strLine, 3000);
+                fio.getline(temp_strLine, MAX_LINE_LENGTH);
                 strLine = (std::string)temp_strLine;
                 if (newMarker != ""){
                     //Replacing all pattern sequences to oldMarker
@@ -320,14 +325,16 @@ void Wlswitch::replaceMarker(std::string oldMarker, std::string newMarker)
             std::vector<std::string> tempMarkersSaved;
             strLine = deleteExtraSpaces(strLine);
             //Making string without 'autoConfigLineString' (only markers with spaces)
-            std::string markersString = strLine.substr(strLine.find(autoConfigLineString, 0) + autoConfigLineString.length() + 1, strLine.length() - autoConfigLineString.length());
+            std::string markersString = strLine.substr(strLine.find(autoConfigLineString, 0) +
+                                                               autoConfigLineString.length() + 1,
+                                                       strLine.length() - autoConfigLineString.length());
             //Deleting first space symbol if exist
             markersString = deleteExtraSpaces(markersString);
             //Counting spaces in string without oldMarker (spaceCount  == oldMarker position in next line)
-            std::size_t spacesCount =  countSpacesBeforeFind(markersString, oldMarker);
+            std::size_t spacesCount = countSpacesBeforeFound(markersString, oldMarker);
             //Read next line after ###<AUTO_CONFIG_LINE> which will be modified
             fileContain += strLine + "\n";
-            fio.getline(temp_strLine, 3000);
+            fio.getline(temp_strLine, MAX_LINE_LENGTH);
             strLine = (std::string)temp_strLine;
             if (newMarker != "" && markersString.find(oldMarker, 0) != std::string::npos){
                 //Replacing only one pattern sequences, which have the same number as 'spaceCount + 1' to oldMarker
@@ -338,9 +345,10 @@ void Wlswitch::replaceMarker(std::string oldMarker, std::string newMarker)
                         strLine.replace(m.position(), m.str().length(), oldMarker);
                         //Delete oldMarker from markerString and recount spacesCount (for each oldMarker in string)
                         if (markersString.find(oldMarker, 0) + oldMarker.length() < markersString.length())
-                            markersString = markersString.substr(markersString.find(oldMarker, 0) + oldMarker.length() + 1, markersString.length() - oldMarker.length());
+                            markersString = markersString.substr(markersString.find(oldMarker, 0) + oldMarker.length() + 1,
+                                                                 markersString.length() - oldMarker.length());
                         if (markersString.find(oldMarker, 0) != std::string::npos)
-                            spacesCount +=  countSpacesBeforeFind(markersString, oldMarker) + 1;
+                            spacesCount += countSpacesBeforeFound(markersString, oldMarker) + 1;
                     }
                     else{
                         tempMarkersSaved.push_back(strLine.substr(m.position(), m.str().length()));
@@ -357,7 +365,7 @@ void Wlswitch::replaceMarker(std::string oldMarker, std::string newMarker)
                     strLine.replace(strLine.find(tempMarkers[i], 0), tempMarkers[i].length(), tempMarkersSaved[i]);
             }
         }
-        fileContain += strLine + (std::string)"\n";
+        fileContain += strLine + std::string("\n");
     }
     fio.close();
     //Saving to file
@@ -375,7 +383,7 @@ void Wlswitch::calculateMarkers()
     /*
         Calculating some characteristics of the wallpaper picture for e.g. average color (avg) e.t.c
     */
-    if (currentWallpaper != ""){
+    if (!currentWallpaper.empty()){
         Magick::Image wallpaperImage;
         Magick::Image cropImage;
         ImagePartsStatistics wallpaperImageStats;
@@ -388,34 +396,50 @@ void Wlswitch::calculateMarkers()
             std::cerr << errOpeningWallpaper << std::endl;
             return;
         }
-        std::unordered_map<std::string, ImagePartsStatistics>::const_iterator got = statisticsContainer.find(currentWallpaper);
+        std::unordered_map<std::string, ImagePartsStatistics>::const_iterator got =
+                statisticsContainer.find(currentWallpaper);
         if (got == statisticsContainer.end()){
             wallpaperImage.statistics(&wallpaperImageStats.all);
             size_t imageHeight = wallpaperImage.size().height();
             size_t imageWidth = wallpaperImage.size().width();
             //Calculating upSide image statistics
             cropImage = wallpaperImage;
-            cropImage.crop(Magick::Geometry(imageWidth, imageHeight / 10, 0, 0));
+            cropImage.crop(Magick::Geometry(imageWidth,
+                                            imageHeight / 10,
+                                            0,
+                                            0));
             cropImage.statistics(&wallpaperImageStats.upSide);
 
             //Calculating downSide image statistics
             cropImage = wallpaperImage;
-            cropImage.crop(Magick::Geometry(imageWidth, imageHeight / 10, 0, imageHeight - imageHeight / 10));
+            cropImage.crop(Magick::Geometry(imageWidth,
+                                            imageHeight / 10,
+                                            0,
+                                            imageHeight - imageHeight / 10));
             cropImage.statistics(&wallpaperImageStats.downSide);
 
             //Calculating leftSide image statistics
             cropImage = wallpaperImage;
-            cropImage.crop(Magick::Geometry(imageWidth / 2, imageHeight, 0, 0));
+            cropImage.crop(Magick::Geometry(imageWidth / 2,
+                                            imageHeight,
+                                            0,
+                                            0));
             cropImage.statistics(&wallpaperImageStats.leftSide);
 
             //Calculating rightSide image statistics
             cropImage = wallpaperImage;
-            cropImage.crop(Magick::Geometry(imageWidth / 2, imageHeight, imageWidth - imageWidth / 2 , 0));
+            cropImage.crop(Magick::Geometry(imageWidth / 2,
+                                            imageHeight,
+                                            imageWidth - imageWidth / 2 ,
+                                            0));
             cropImage.statistics(&wallpaperImageStats.rightSide);
 
             //Calculating center image statistics
             cropImage = wallpaperImage;
-            cropImage.crop(Magick::Geometry(imageWidth / 3, imageHeight / 3, (imageWidth - imageWidth / 3) / 2, (imageHeight - imageHeight / 3) / 2));
+            cropImage.crop(Magick::Geometry(imageWidth / 3,
+                                            imageHeight / 3,
+                                            (imageWidth - imageWidth / 3) / 2,
+                                            (imageHeight - imageHeight / 3) / 2));
             cropImage.statistics(&wallpaperImageStats.center);
 
             std::pair<std::string, ImagePartsStatistics> pairToAdd (currentWallpaper, wallpaperImageStats);
@@ -509,7 +533,7 @@ std::string Wlswitch::deleteExtraSpaces(std::string src)
     return src;
 }
 
-std::size_t Wlswitch::countSpacesBeforeFind(std::string src, std::string findSrc)
+std::size_t Wlswitch::countSpacesBeforeFound(std::string src, std::string findSrc)
 {
     std::size_t spacesCount = 0;
     std::size_t i = 0;
@@ -524,7 +548,7 @@ std::size_t Wlswitch::countSpacesBeforeFind(std::string src, std::string findSrc
 std::vector<std::string> Wlswitch::readImagesFromDir(std::string path)
 {
     std::vector<std::string> namesList;
-    if (path != ""){
+    if (!path.empty()){
         DIR *d = NULL;
         DIR *tempD = NULL;
         struct dirent* dentry = NULL;
@@ -552,7 +576,8 @@ std::vector<std::string> Wlswitch::readImagesFromDir(std::string path)
                     }
                     for (std::size_t i = 0; i < imageFormats.size(); i++)
                         if (tempFilename.find((std::string)"." + imageFormats[i], 0) != std::string::npos)
-                            if(tempFilename.find((std::string)"." + imageFormats[i], 0) == tempFilename.length() - imageFormats[i].length() - 1){
+                            if(tempFilename.find((std::string)"." + imageFormats[i], 0) ==
+                                    tempFilename.length() - imageFormats[i].length() - 1){
                                 namesList.push_back(tempFilename);
                                 break;
                             }

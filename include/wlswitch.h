@@ -22,6 +22,8 @@
 #include <unordered_map>
 #include <Magick++.h>
 #include "marker.h"
+
+#define MAX_LINE_LENGTH (3000)
 typedef struct
 {
     Magick::Image::ImageStatistics all;
@@ -77,7 +79,7 @@ private:
     std::vector<Marker> markers;
 
     std::string deleteExtraSpaces(std::string src);
-    std::size_t countSpacesBeforeFind(std::string src, std::string findSrc);
+    std::size_t countSpacesBeforeFound(std::string src, std::string findSrc);
     std::vector<std::string> readImagesFromDir(std::string path);
     void loadConfig();
     void parseConfig(std::string line);

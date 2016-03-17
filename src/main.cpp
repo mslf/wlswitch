@@ -22,7 +22,7 @@
 int main()
 {
     Wlswitch wl;
-    while (1) {
+    while (true) {
         wl.switchWallpaper();
         wl.updateDependConfigs();
         if (wl.waitDelay())
