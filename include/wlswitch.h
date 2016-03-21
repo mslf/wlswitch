@@ -45,6 +45,7 @@ private:
     std::string delay;
     std::string currentDependConfig;
     std::string currentWallpaper;
+    std::string lockFilePath;
     std::vector<std::string> imageFormats;
     bool usingSubDirs;
     bool wallpaperChanged;
@@ -84,6 +85,7 @@ private:
     void loadConfig();
     void parseConfig(std::string line);
     void replaceMarker(std::string oldMarker, std::string newMarker);
+    bool isLocked();
     void calculateMarkers();
 public:
     Wlswitch(std::string path = "", std::string newDelay = "180");

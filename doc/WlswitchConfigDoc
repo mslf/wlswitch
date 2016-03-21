@@ -9,6 +9,9 @@ You can quote right operand like this:
 Usually it needs for path with spaces.
 
 List of 'wlswitch' left operands for configurating it's behavior:
+lockFilePath = "some path with '/' symbol at the end"
+    -- set the lock-file path
+    -- if this file exist then 'wlswitch' will do nothing
 path = "some path with '/' symbol at the end"
 	-- set the wallpapers directory path
 	-- (images from this folder using by 'wlswitch')
@@ -73,5 +76,8 @@ InvertL
 	-- Inverted version of Light reserved marker
 InvertLL
 	-- Inverted version of LightLight reserved marker
-	
+
+List of reserved non-marker modifiers names:
+currentWallpaperPath
+    -- String with full path to current wallpaper
 See the 'wlswitch_sample.conf'

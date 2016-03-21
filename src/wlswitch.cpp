@@ -107,49 +107,50 @@ void Wlswitch::loadConfig()
 
 void Wlswitch::switchWallpaper()
 {
-    if (!currentDir.empty() && !switcherProgram.empty()){
-        std::vector<std::string> namesList;
-        std::string resultFilename;
-        /*
-            In current directory we get the list of images (jpg, png) and puts it to
-            namesList string and count them.
-            Then we random number between 0 and count of files and set the resultFilename to namesList[randNum]
-        */
-            namesList = readImagesFromDir(currentDir);
-            srand (time (NULL));
-            if (namesList.size() != 0) {
-                unsigned long int randNum = rand() % namesList.size();
-                if (currentWallpaper != currentDir + namesList[randNum]){
-                    resultFilename = namesList[randNum];
-                    wallpaperChanged = true;
-                }
-                else
-                    wallpaperChanged = false;
-            }else
-                std::cerr << errEmptyDir << std::endl;
-        if (!resultFilename.empty() && wallpaperChanged){
-            currentWallpaper = currentDir + resultFilename;
-            std::string temp = switcherProgram + std::string(" ") +
-                    switcherArguments + std::string(" \"") +
-                    currentWallpaper + std::string("\"\n");
-            system(temp.c_str());
+    if (!isLocked())
+        if (!currentDir.empty() && !switcherProgram.empty()){
+            std::vector<std::string> namesList;
+            std::string resultFilename;
+            /*
+                In current directory we get the list of images (jpg, png) and puts it to
+                namesList string and count them.
+                Then we random number between 0 and count of files and set the resultFilename to namesList[randNum]
+            */
+                namesList = readImagesFromDir(currentDir);
+                srand (time (NULL));
+                if (namesList.size() != 0) {
+                    unsigned long int randNum = rand() % namesList.size();
+                    if (currentWallpaper != currentDir + namesList[randNum]){
+                        resultFilename = namesList[randNum];
+                        wallpaperChanged = true;
+                    }
+                    else
+                        wallpaperChanged = false;
+                }else
+                    std::cerr << errEmptyDir << std::endl;
+            if (!resultFilename.empty() && wallpaperChanged){
+                currentWallpaper = currentDir + resultFilename;
+                std::string temp = switcherProgram + std::string(" ") +
+                        switcherArguments + std::string(" \"") +
+                        currentWallpaper + std::string("\"\n");
+                system(temp.c_str());
 
-            //Computing wallpaper's characteristics
-            calculateMarkers();
+                //Computing wallpaper's characteristics
+                calculateMarkers();
+            }
         }
-    }
-    else
-        std::cerr << errDirNotSeted << std::endl;
+        else
+            std::cerr << errDirNotSeted << std::endl;
 }
 
 void Wlswitch::updateDependConfigs()
 {
-    if (!shellProgram.empty() && !updateBeforeScript.empty() && wallpaperChanged){
+    if (!shellProgram.empty() && !updateBeforeScript.empty() && wallpaperChanged && !isLocked()){
         std::string temp = shellProgram + std::string(" ") + updateBeforeScript;
         system(temp.c_str());
     }
     loadConfig();
-    if (!shellProgram.empty() && !updateAfterScript.empty() && wallpaperChanged){
+    if (!shellProgram.empty() && !updateAfterScript.empty() && wallpaperChanged && !isLocked()){
         std::string temp = shellProgram + std::string(" ") + updateAfterScript;
         system(temp.c_str());
     }
@@ -204,6 +205,9 @@ void Wlswitch::parseConfig(std::string line)
             i++;
         }
         //Checking leftOperand for markers or config flags
+        //Lock-file path setting
+        if (leftOperand == "lockFilePath")
+            lockFilePath = rightOperand;
         //Path setting
         if (leftOperand == "path")
             currentDir = rightOperand;
@@ -243,10 +247,14 @@ void Wlswitch::parseConfig(std::string line)
             currentDependConfig = rightOperand;
 
         //Reading markers
-        if (wallpaperChanged)
+        if (wallpaperChanged) {
             for (i = 0; i < markers.size(); i++)
                 if (!markers[i].getSelectedString(rightOperand).empty())
                     replaceMarker(leftOperand, markers[i].getSelectedString(rightOperand));
+
+            if (rightOperand == "currentWallpaperPath")
+                replaceMarker(leftOperand, currentWallpaper);
+        }
     } else
         std::cerr << errNoEqualSymbol << line << ">" << std::endl;
 }
@@ -589,4 +597,11 @@ std::vector<std::string> Wlswitch::readImagesFromDir(std::string path)
             std::cerr << errWrongDir << path << std::endl;
     }
     return namesList;
+}
+
+bool Wlswitch::isLocked()
+{
+    std::ifstream fin;
+    fin.open(lockFilePath);
+    return fin.is_open();
 }
